@@ -7449,6 +7449,7 @@ export function getSearchSuggestions({ q = "", limit = 8 } = {}) {
   const normalized = normalizeSearch(q);
   const terms = searchVocabulary();
   if (!normalized) return terms.slice(0, limit);
+  const typePriority = { category: 0, author: 1, tag: 2, article: 3, video: 3, podcast: 3, review: 3, device: 3 };
   return terms
     .map((item) => {
       const label = normalizeSearch(item.label);
@@ -7456,7 +7457,7 @@ export function getSearchSuggestions({ q = "", limit = 8 } = {}) {
       const includes = label.includes(normalized) ? 0 : 20;
       return { ...item, score: starts + includes + levenshtein(normalized, label.slice(0, Math.max(normalized.length, 1))) };
     })
-    .sort((a, b) => a.score - b.score || a.label.localeCompare(b.label))
+    .sort((a, b) => a.score - b.score || (typePriority[a.type] ?? 9) - (typePriority[b.type] ?? 9) || a.label.localeCompare(b.label))
     .slice(0, limit)
     .map(({ score, ...item }) => item);
 }
