@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tech-magazine-app
+  namespace: tech-magazine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tech-magazine-app
+  template:
+    metadata:
+      labels:
+        app: tech-magazine-app
+    spec:
+      containers:
+        - name: app
+          image: tech-magazine:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "768Mi"
+          envFrom:
+            - configMapRef:
+                name: tech-magazine-config
+            - secretRef:
+                name: tech-magazine-secrets
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: uploads
+              mountPath: /app/public/uploads
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: tech-magazine-data
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: tech-magazine-uploads
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tech-magazine-app
+  namespace: tech-magazine
+spec:
+  selector:
+    app: tech-magazine-app
+  ports:
+    - port: 80
+      targetPort: 8000

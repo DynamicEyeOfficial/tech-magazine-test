@@ -1,0 +1,18 @@
+[Unit]
+Description=Tech Magazine web app
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/tech-magazine
+EnvironmentFile=/opt/tech-magazine/.env
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+User=techmag
+Group=techmag
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

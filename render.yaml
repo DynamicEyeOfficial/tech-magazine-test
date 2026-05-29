@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: tech-magazine-test
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: SITE_URL
+        value: https://tech-magazine-test.onrender.com
+      - key: TRUST_PROXY
+        value: "true"
+      - key: DATABASE_CLIENT
+        value: sqlite
+      - key: DATABASE_PATH
+        value: data/tech_magazine.db
+      - key: SESSION_DAYS
+        value: "7"
+      - key: EMAIL_PROVIDER
+        value: dummy
+      - key: EMAIL_FROM
+        value: dummy@techmag.local
+      - key: EMAIL_REPLY_TO
+        value: dummy@techmag.local
+      - key: PAYMENT_PROVIDER
+        value: none
+      - key: WORKER_ENABLED
+        value: "false"
+      - key: NEWS_IMPORT_ENABLED
+        value: "true"
+      - key: NEWS_IMPORT_ON_STARTUP
+        value: "true"
+      - key: NEWS_IMPORT_TARGET_COUNT
+        value: "50"
+      - key: NEWS_IMPORT_STATUS
+        value: source_policy
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+      - key: SEED_EDITOR_PASSWORD
+        sync: false
+      - key: SEED_REPORTER_PASSWORD
+        sync: false
+      - key: SEED_QA_REPORTER_PASSWORD
+        sync: false

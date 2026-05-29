@@ -1,0 +1,15 @@
+data/*.db
+data/*.db-*
+backups/
+screenshots/
+public/uploads/*
+!public/uploads/.gitkeep
+.env
+.env.staging
+.env.production
+.qa-admin-credentials.json
+node_modules/
+*.log
+*.err
+cloudflared*.exe
+tools/cloudflared.exe

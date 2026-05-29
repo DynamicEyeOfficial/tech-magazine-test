@@ -1,0 +1,14 @@
+data/
+backups/
+screenshots/
+.env
+.env.staging
+.env.production
+.git/
+node_modules/
+npm-debug.log
+*.log
+tools/
+.qa-admin-credentials.json
+TECH_MAGAZINE_USER_STORY_BUSINESS_MODEL.pdf
+TECH_MAGAZINE_USER_STORY_BUSINESS_MODEL.html

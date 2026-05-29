@@ -1,0 +1,110 @@
+export const DEFAULT_NEWS_SOURCES = [
+  {
+    id: "techcrunch",
+    name: "TechCrunch",
+    url: "https://techcrunch.com/feed/",
+    category: "startups",
+    priority: 95,
+    trustLevel: "high",
+    defaultStatus: "published",
+    autoPublishMaxRisk: 55,
+    excludeKeywords: "celebrity gossip\nlottery\ncasino\ncoupon code\npromo code\n% off\nlimited time",
+    inspectionKeywords: "lawsuit\naccused\nbreach\nransomware\nphishing\nlayoffs"
+  },
+  {
+    id: "the-verge",
+    name: "The Verge",
+    url: "https://www.theverge.com/rss/index.xml",
+    category: "software",
+    priority: 92,
+    trustLevel: "high",
+    defaultStatus: "published",
+    autoPublishMaxRisk: 55,
+    excludeKeywords: "celebrity gossip\nlottery\ncasino\ncoupon code\npromo code\n% off\nlimited time",
+    inspectionKeywords: "lawsuit\naccused\nsettlement\npolicy\nadult"
+  },
+  {
+    id: "ars-technica",
+    name: "Ars Technica",
+    url: "https://feeds.arstechnica.com/arstechnica/index",
+    category: "software",
+    priority: 90,
+    trustLevel: "high",
+    defaultStatus: "published",
+    autoPublishMaxRisk: 55,
+    excludeKeywords: "celebrity gossip\nlottery\ncasino\ncoupon code\npromo code\n% off\nlimited time",
+    inspectionKeywords: "lawsuit\naccused\nbreach\nmalware\nvulnerability\npolitics"
+  },
+  {
+    id: "engadget",
+    name: "Engadget",
+    url: "https://www.engadget.com/rss.xml",
+    category: "hardware",
+    priority: 86,
+    trustLevel: "medium",
+    defaultStatus: "published",
+    autoPublishMaxRisk: 50,
+    excludeKeywords: "celebrity gossip\nlottery\ncasino\ncoupon code\npromo code\n% off\nlimited time",
+    inspectionKeywords: "lawsuit\naccused\nban\npolicy"
+  },
+  {
+    id: "wired",
+    name: "WIRED",
+    url: "https://www.wired.com/feed/rss",
+    category: "enterprise-tech",
+    priority: 84,
+    trustLevel: "high",
+    defaultStatus: "published",
+    autoPublishMaxRisk: 50,
+    excludeKeywords: "celebrity gossip\nlottery\ncasino\ncoupon code\npromo code\n% off\nlimited time",
+    inspectionKeywords: "lawsuit\naccused\npolitics\nwar\nsafety\nlayoffs"
+  },
+  {
+    id: "venturebeat",
+    name: "VentureBeat",
+    url: "https://venturebeat.com/feed/",
+    category: "ai",
+    priority: 82,
+    trustLevel: "medium",
+    defaultStatus: "published",
+    autoPublishMaxRisk: 50,
+    excludeKeywords: "celebrity gossip\nlottery\ncasino\ncoupon code\npromo code\n% off\nlimited time",
+    inspectionKeywords: "lawsuit\naccused\nleak\ncredentials"
+  },
+  {
+    id: "mit-news-tech",
+    name: "MIT News Technology",
+    url: "https://news.mit.edu/rss/topic/technology",
+    category: "ai",
+    priority: 78,
+    trustLevel: "high",
+    defaultStatus: "published",
+    autoPublishMaxRisk: 60,
+    excludeKeywords: "celebrity gossip\nlottery\ncasino\ncoupon code\npromo code\n% off\nlimited time",
+    inspectionKeywords: "medical\nclinical\npolicy\nrisk"
+  },
+  {
+    id: "the-register",
+    name: "The Register",
+    url: "https://www.theregister.com/headlines.atom",
+    category: "enterprise-tech",
+    priority: 76,
+    trustLevel: "medium",
+    defaultStatus: "published",
+    autoPublishMaxRisk: 45,
+    excludeKeywords: "celebrity gossip\nlottery\ncasino\ncoupon code\npromo code\n% off\nlimited time",
+    inspectionKeywords: "breach\nmalware\nransomware\ncredentials\nlawsuit\naccused\nexploit\ncivil unrest"
+  },
+  {
+    id: "hacker-news",
+    name: "Hacker News",
+    url: "https://news.ycombinator.com/news",
+    category: "software",
+    priority: 62,
+    trustLevel: "low",
+    defaultStatus: "pending_review",
+    autoPublishMaxRisk: 25,
+    excludeKeywords: "watermark removal\nremove ai watermark\ncelebrity gossip\nlottery\ncasino\ncoupon code\npromo code\n% off\nlimited time",
+    inspectionKeywords: "github\ntwitter\nrumor\nleak\naccused\nsecurity\ncredentials"
+  }
+];

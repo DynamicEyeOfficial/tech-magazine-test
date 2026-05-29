@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tech-magazine-worker
+  namespace: tech-magazine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tech-magazine-worker
+  template:
+    metadata:
+      labels:
+        app: tech-magazine-worker
+    spec:
+      containers:
+        - name: worker
+          image: tech-magazine:latest
+          imagePullPolicy: IfNotPresent
+          command: ["node", "worker.js"]
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "300m"
+              memory: "512Mi"
+          envFrom:
+            - configMapRef:
+                name: tech-magazine-config
+            - secretRef:
+                name: tech-magazine-secrets
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: tech-magazine-data

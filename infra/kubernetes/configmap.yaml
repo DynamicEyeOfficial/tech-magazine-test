@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tech-magazine-config
+  namespace: tech-magazine
+data:
+  NODE_ENV: "production"
+  HOST: "0.0.0.0"
+  PORT: "8000"
+  SITE_URL: "https://your-domain.com"
+  TRUST_PROXY: "true"
+  DATABASE_CLIENT: "sqlite"
+  DATABASE_PATH: "data/tech_magazine.db"
+  BACKUP_DIR: "backups"
+  SESSION_DAYS: "7"
+  MAX_UPLOAD_BYTES: "5242880"
+  CACHE_TTL_SECONDS: "30"
+  EMAIL_PROVIDER: "dummy"
+  EMAIL_FROM: "dummy@techmag.local"
+  EMAIL_REPLY_TO: "dummy@techmag.local"
+  PAYMENT_PROVIDER: "none"
+  WORKER_ENABLED: "true"
+  WORKER_INTERVAL_MS: "5000"
+  GOOGLE_ANALYTICS_ID: ""
+  GOOGLE_TAG_MANAGER_ID: ""
+  SEARCH_CONSOLE_VERIFICATION: ""
+  MATOMO_URL: ""
+  MATOMO_SITE_ID: ""

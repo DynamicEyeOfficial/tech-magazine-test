@@ -1,0 +1,107 @@
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const envPath = resolve(process.cwd(), ".env");
+
+if (existsSync(envPath)) {
+  const lines = readFileSync(envPath, "utf8").split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
+    const index = trimmed.indexOf("=");
+    const key = trimmed.slice(0, index).trim();
+    const value = trimmed.slice(index + 1).trim().replace(/^["']|["']$/g, "");
+    if (!(key in process.env)) process.env[key] = value;
+  }
+}
+
+export const config = {
+  nodeEnv: process.env.NODE_ENV || "development",
+  host: process.env.HOST || "127.0.0.1",
+  port: Number.parseInt(process.env.PORT || "8000", 10),
+  siteUrl: (process.env.SITE_URL || "http://127.0.0.1:8000").replace(/\/$/, ""),
+  databasePath: process.env.DATABASE_PATH || "data/tech_magazine.db",
+  databaseClient: (process.env.DATABASE_CLIENT || "sqlite").toLowerCase(),
+  postgresUrl: process.env.POSTGRES_URL || "",
+  backupDir: process.env.BACKUP_DIR || "backups",
+  sessionDays: Number.parseInt(process.env.SESSION_DAYS || "7", 10),
+  maxUploadBytes: Number.parseInt(process.env.MAX_UPLOAD_BYTES || String(5 * 1024 * 1024), 10),
+  maxImageUploadBytes: Number.parseInt(process.env.MAX_IMAGE_UPLOAD_BYTES || process.env.MAX_UPLOAD_BYTES || String(5 * 1024 * 1024), 10),
+  maxVideoUploadBytes: Number.parseInt(process.env.MAX_VIDEO_UPLOAD_BYTES || process.env.MAX_UPLOAD_BYTES || String(50 * 1024 * 1024), 10),
+  maxAudioUploadBytes: Number.parseInt(process.env.MAX_AUDIO_UPLOAD_BYTES || process.env.MAX_UPLOAD_BYTES || String(25 * 1024 * 1024), 10),
+  mediaCdnBaseUrl: (process.env.MEDIA_CDN_BASE_URL || "").replace(/\/$/, ""),
+  mediaStorageProvider: process.env.MEDIA_STORAGE_PROVIDER || "local",
+  mediaOptimizationMode: process.env.MEDIA_OPTIMIZATION_MODE || "metadata",
+  mediaCacheControl: process.env.MEDIA_CACHE_CONTROL || "public, max-age=31536000, immutable",
+  mediaScanMode: process.env.MEDIA_SCAN_MODE || "basic",
+  mediaScannerWebhookUrl: process.env.MEDIA_SCANNER_WEBHOOK_URL || "",
+  doSpacesName: process.env.DO_SPACES_NAME || "",
+  doSpacesRegion: process.env.DO_SPACES_REGION || "nyc3",
+  doSpacesEndpoint: (process.env.DO_SPACES_ENDPOINT || "").replace(/\/$/, ""),
+  doSpacesAccessKeyId: process.env.DO_SPACES_ACCESS_KEY_ID || "",
+  doSpacesSecretAccessKey: process.env.DO_SPACES_SECRET_ACCESS_KEY || "",
+  doSpacesCdnBaseUrl: (process.env.DO_SPACES_CDN_BASE_URL || "").replace(/\/$/, ""),
+  s3Bucket: process.env.S3_BUCKET || "",
+  s3Region: process.env.S3_REGION || "us-east-1",
+  s3Endpoint: (process.env.S3_ENDPOINT || "").replace(/\/$/, ""),
+  s3AccessKeyId: process.env.S3_ACCESS_KEY_ID || "",
+  s3SecretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
+  s3PublicBaseUrl: (process.env.S3_PUBLIC_BASE_URL || "").replace(/\/$/, ""),
+  r2AccountId: process.env.R2_ACCOUNT_ID || "",
+  r2Bucket: process.env.R2_BUCKET || "",
+  r2Endpoint: (process.env.R2_ENDPOINT || "").replace(/\/$/, ""),
+  r2AccessKeyId: process.env.R2_ACCESS_KEY_ID || "",
+  r2SecretAccessKey: process.env.R2_SECRET_ACCESS_KEY || "",
+  r2PublicBaseUrl: (process.env.R2_PUBLIC_BASE_URL || "").replace(/\/$/, ""),
+  videoStreamingProvider: process.env.VIDEO_STREAMING_PROVIDER || "local",
+  videoTranscoderMode: process.env.VIDEO_TRANSCODER_MODE || "none",
+  ffmpegPath: process.env.FFMPEG_PATH || "ffmpeg",
+  videoHlsSegmentSeconds: Number.parseInt(process.env.VIDEO_HLS_SEGMENT_SECONDS || "6", 10),
+  videoLiveChatProvider: process.env.VIDEO_LIVE_CHAT_PROVIDER || "internal",
+  searchProvider: process.env.SEARCH_PROVIDER || "sqlite",
+  searchIndexMode: process.env.SEARCH_INDEX_MODE || "internal",
+  openSearchUrl: process.env.OPENSEARCH_URL || "",
+  openSearchIndex: process.env.OPENSEARCH_INDEX || "tech-magazine",
+  openSearchApiKey: process.env.OPENSEARCH_API_KEY || "",
+  trustProxy: process.env.TRUST_PROXY === "true",
+  cacheTtlSeconds: Number.parseInt(process.env.CACHE_TTL_SECONDS || "30", 10),
+  redisUrl: process.env.REDIS_URL || "",
+  redisRestUrl: (process.env.REDIS_REST_URL || "").replace(/\/$/, ""),
+  redisRestToken: process.env.REDIS_REST_TOKEN || "",
+  workerEnabled: process.env.WORKER_ENABLED !== "false",
+  workerIntervalMs: Number.parseInt(process.env.WORKER_INTERVAL_MS || "5000", 10),
+  emailProvider: process.env.EMAIL_PROVIDER || "dummy",
+  emailFrom: process.env.EMAIL_FROM || "dummy@techmag.local",
+  emailReplyTo: process.env.EMAIL_REPLY_TO || process.env.EMAIL_FROM || "dummy@techmag.local",
+  sendgridApiKey: process.env.SENDGRID_API_KEY || "",
+  brevoApiKey: process.env.BREVO_API_KEY || "",
+  mailchimpApiKey: process.env.MAILCHIMP_API_KEY || "",
+  sesRegion: process.env.SES_REGION || "us-east-1",
+  sesAccessKeyId: process.env.SES_ACCESS_KEY_ID || "",
+  sesSecretAccessKey: process.env.SES_SECRET_ACCESS_KEY || "",
+  paymentProvider: process.env.PAYMENT_PROVIDER || "none",
+  googleAnalyticsId: process.env.GOOGLE_ANALYTICS_ID || "",
+  googleTagManagerId: process.env.GOOGLE_TAG_MANAGER_ID || "",
+  searchConsoleVerification: process.env.SEARCH_CONSOLE_VERIFICATION || "",
+  matomoUrl: (process.env.MATOMO_URL || "").replace(/\/$/, ""),
+  matomoSiteId: process.env.MATOMO_SITE_ID || "",
+  firebaseApiKey: process.env.FIREBASE_API_KEY || "AIzaSyCZMP8w7d7mzxG-SNa263MqKXE2VbRl6CQ",
+  firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN || "it-magazine-aeb46.firebaseapp.com",
+  firebaseProjectId: process.env.FIREBASE_PROJECT_ID || "it-magazine-aeb46",
+  firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET || "it-magazine-aeb46.firebasestorage.app",
+  firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "562041561457",
+  firebaseAppId: process.env.FIREBASE_APP_ID || "1:562041561457:web:cede8a95b4edd1ac5416d0",
+  firebaseMeasurementId: process.env.FIREBASE_MEASUREMENT_ID || "G-3WJ3VLSTKR",
+  firebaseVapidKey: process.env.FIREBASE_VAPID_KEY || "BGF0svodJRRLzJR6SM3egOV4hCSwUa4i36LjgTAhIpRPPq7JTnBXEeTl2LeiUWDxAAqzMZjQgBvoK1nmVZHCBLY",
+  firebaseServiceAccountJson: process.env.FIREBASE_SERVICE_ACCOUNT_JSON || "",
+  firebaseClientEmail: process.env.FIREBASE_CLIENT_EMAIL || "",
+  firebasePrivateKey: (process.env.FIREBASE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+  openaiApiKey: process.env.OPENAI_API_KEY || "",
+  openaiModel: process.env.OPENAI_MODEL || "gpt-5.2",
+  openaiTranscriptionModel: process.env.OPENAI_TRANSCRIPTION_MODEL || "gpt-4o-mini-transcribe",
+  newsImportEnabled: process.env.NEWS_IMPORT_ENABLED !== "false",
+  newsImportOnStartup: process.env.NEWS_IMPORT_ON_STARTUP === "true",
+  newsImportIntervalMinutes: Number.parseInt(process.env.NEWS_IMPORT_INTERVAL_MINUTES || "60", 10),
+  newsImportTargetCount: Number.parseInt(process.env.NEWS_IMPORT_TARGET_COUNT || "50", 10),
+  newsImportStatus: process.env.NEWS_IMPORT_STATUS || "source_policy"
+};

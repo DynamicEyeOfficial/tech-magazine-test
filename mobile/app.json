@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "Tech Magazine",
+    "slug": "tech-magazine",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "techmagazine",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#071014"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.techmagazine.app",
+      "associatedDomains": [
+        "applinks:techmagazine.com"
+      ],
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Use Face ID to protect your Tech Magazine reader account."
+      }
+    },
+    "android": {
+      "package": "com.techmagazine.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#071014"
+      },
+      "permissions": [
+        "POST_NOTIFICATIONS",
+        "USE_BIOMETRIC"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "techmagazine.com"
+            },
+            {
+              "scheme": "techmagazine"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "extra": {
+      "apiBaseUrl": "http://127.0.0.1:8000"
+    }
+  }
+}
