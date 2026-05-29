@@ -1,5 +1,6 @@
 import { randomBytes, createHash } from "node:crypto";
 import { connect } from "node:net";
+import { connect as tlsConnect } from "node:tls";
 import { cleanupQaData } from "./qa-cleanup.js";
 import { getQaAdminCredentials, hasKnownCredentialLeak, hasSecretTokenLeak } from "./qa-credentials.js";
 
@@ -180,7 +181,10 @@ function waitForWorkflowSocketEvent(cookie, expectedType, trigger) {
   return new Promise((resolve) => {
     const target = new URL(baseUrl);
     const key = randomBytes(16).toString("base64");
-    const socket = connect(Number(target.port || 80), target.hostname);
+    const isSecure = target.protocol === "https:";
+    const socket = isSecure
+      ? tlsConnect(Number(target.port || 443), target.hostname, { servername: target.hostname })
+      : connect(Number(target.port || 80), target.hostname);
     let settled = false;
     let buffer = "";
     const finish = (ok, status = 0) => {

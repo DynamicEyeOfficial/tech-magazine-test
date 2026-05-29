@@ -7442,7 +7442,7 @@ function searchVocabulary() {
   const categoryRows = database.prepare("SELECT name, slug FROM categories ORDER BY sort_order").all().map((category) => ({ type: "category", label: category.name, value: category.slug }));
   const authorRows = database.prepare("SELECT name, id FROM authors ORDER BY name").all().map((author) => ({ type: "author", label: author.name, value: author.id }));
   const indexRows = database.prepare("SELECT item_type AS type, title AS label, slug AS value FROM search_index WHERE status = 'published' ORDER BY popularity DESC, title LIMIT 200").all();
-  return [...tagRows, ...categoryRows, ...authorRows, ...indexRows];
+  return [...categoryRows, ...tagRows, ...authorRows, ...indexRows];
 }
 
 export function getSearchSuggestions({ q = "", limit = 8 } = {}) {
