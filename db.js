@@ -3392,6 +3392,7 @@ export function saveAdminArticle(payload) {
     .run(record);
 
   replaceArticleTags(id, payload.tags || "");
+  rebuildSearchIndex();
   addAuditLog({
     userId: payload.savedBy || null,
     action: payload.id ? "article:edit" : "article:create",
