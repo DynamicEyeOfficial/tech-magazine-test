@@ -2180,9 +2180,33 @@ export function initDatabase() {
   insertSubscriber.run(randomUUID(), "security.reader@example.com", "security-alerts");
 }
 
-export function getBootstrap() {
+function localizedCategories(languageCode = "en") {
+  const rows = database.prepare("SELECT name, slug, color, icon, description FROM categories ORDER BY sort_order").all();
+  if (languageCode !== "ar") return rows;
+  const labels = {
+    ai: ["الذكاء الاصطناعي", "أخبار وتحليلات الذكاء الاصطناعي، النماذج، الوكلاء، والمنتجات الجديدة."],
+    cybersecurity: ["الأمن السيبراني", "تغطية التهديدات، الخصوصية، أمن المؤسسات، والدفاع الرقمي."],
+    software: ["البرمجيات", "منصات وتطبيقات وأدوات تطوير تغير طريقة العمل."],
+    hardware: ["العتاد", "معالجات وأجهزة وحواسيب ومكونات تقنية للاستخدام المهني."],
+    startups: ["الشركات الناشئة", "تمويل ومؤسسون ومنتجات وأسواق ناشئة في قطاع التقنية."],
+    gaming: ["الألعاب", "أجهزة وألعاب ومنصات وتجارب تفاعلية للاعبين والمطورين."],
+    cloud: ["السحابة", "بنية تحتية، حوسبة سحابية، كلفة، أمن، وتشغيل على نطاق واسع."],
+    reviews: ["المراجعات", "اختبارات ونتائج ومقارنات تساعد القراء على اتخاذ قرارات أفضل."],
+    tutorials: ["الشروحات", "دروس عملية وخطوات واضحة للمطورين وفرق التقنية."],
+    "enterprise-tech": ["تقنية المؤسسات", "استراتيجيات ومنصات وتحولات رقمية للفرق والشركات الكبيرة."]
+  };
+  return rows.map((category) => {
+    const localized = labels[category.slug];
+    return localized ? { ...category, name: localized[0], description: localized[1], localized: true, language: "ar", direction: "rtl" } : category;
+  });
+}
+
+export function getBootstrap(languageCode = "en") {
+  const lang = String(languageCode || "en").toLowerCase();
   return {
-    categories: database.prepare("SELECT name, slug, color, icon, description FROM categories ORDER BY sort_order").all(),
+    language: lang,
+    direction: lang === "ar" ? "rtl" : "ltr",
+    categories: localizedCategories(lang),
     channels: database.prepare("SELECT name, slug, description FROM channels ORDER BY sort_order").all(),
     authors: database
       .prepare(`
@@ -2195,7 +2219,7 @@ export function getBootstrap() {
       .all()
       .map(publicAuthor),
     languages: getLanguages(),
-    articles: getArticles(),
+    articles: getArticles().map((article) => localizeArticleFallback(applyArticleTranslation(article, lang), lang)),
     videos: getVideos({ includeDrafts: false }),
     videoPlaylists: getVideoPlaylists({ includeDrafts: false }),
     videoCategories: getVideoCategories(),
@@ -7892,6 +7916,53 @@ export function getArticleTranslations(articleId = "") {
     .all(articleId ? { articleId } : {});
 }
 
+function arabicArticleTopic(article = {}) {
+  const categoryLabels = {
+    ai: "الذكاء الاصطناعي",
+    cybersecurity: "الأمن السيبراني",
+    software: "البرمجيات",
+    hardware: "العتاد التقني",
+    startups: "الشركات الناشئة",
+    gaming: "الألعاب",
+    cloud: "الحوسبة السحابية",
+    reviews: "المراجعات",
+    tutorials: "الشروحات التقنية",
+    "enterprise-tech": "تقنية المؤسسات"
+  };
+  return categoryLabels[article.category] || "التقنية";
+}
+
+function arabicArticleTitle(article = {}) {
+  const topic = arabicArticleTopic(article);
+  if (article.breaking) return `عاجل: تطور جديد في ${topic}`;
+  if (article.trending) return `الرائج الآن في ${topic}`;
+  if (article.sponsored) return `محتوى شريك حول ${topic}`;
+  return `تقرير جديد عن ${topic}`;
+}
+
+function localizeArticleFallback(article, languageCode = "en") {
+  if (!article || languageCode !== "ar" || article.language === "ar") return article;
+  const topic = arabicArticleTopic(article);
+  const source = article.sourceName || "غرفة أخبار Tech Magazine";
+  return {
+    ...article,
+    title: arabicArticleTitle(article),
+    subtitle: `ملخص عربي يغطي أهم ما يحدث في ${topic} مع إشارات التحرير والمصدر وبيانات القراءة.`,
+    body: [
+      `تتابع غرفة الأخبار هذا الملف ضمن تغطية ${topic}. يتم عرض هذه النسخة العربية حتى يستطيع القارئ اختبار اتجاه القراءة وتجربة المحتوى المترجم داخل المنصة.`,
+      `المصدر: ${source}. يمكن لفريق التحرير استبدال هذا الملخص بترجمة تحريرية كاملة من لوحة اللغات عند اعتماد النص النهائي.`,
+      "تدعم المنصة اللغة العربية من الواجهة وحتى صفحات المقالات، مع اتجاه قراءة من اليمين إلى اليسار وبيانات SEO محلية."
+    ],
+    seoTitle: `Tech Magazine - ${arabicArticleTitle(article)}`,
+    seoDescription: `نسخة عربية لتغطية ${topic} على Tech Magazine.`,
+    language: "ar",
+    languageName: "العربية",
+    direction: "rtl",
+    translated: true,
+    localizedFallback: true
+  };
+}
+
 function applyArticleTranslation(article, languageCode = "en") {
   if (!article || !languageCode || languageCode === "en") return article ? { ...article, language: "en", direction: "ltr", translated: false } : null;
   const translation = database
@@ -7930,7 +8001,7 @@ export function getArticleForReader(slug, token = "", languageCode = "en") {
       if (baseSlug) article = getArticle(baseSlug);
     }
   }
-  return applyArticlePaywall(applyArticleTranslation(article, languageCode), token);
+  return applyArticlePaywall(localizeArticleFallback(applyArticleTranslation(article, languageCode), languageCode), token);
 }
 
 export function saveArticleTranslation(payload, userId) {

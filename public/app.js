@@ -354,12 +354,39 @@ const uiTranslations = {
     home: "الرئيسية",
     search: "بحث",
     sections: "الأقسام",
+    news: "الأخبار",
+    articles: "المقالات",
+    interviews: "المقابلات",
+    top10: "أفضل 10",
+    channelNewsDescription: "أخبار تقنية سريعة وتحديثات السوق.",
+    channelArticlesDescription: "تحليلات أطول وشروحات ورؤى تحريرية.",
+    channelInterviewsDescription: "حوارات مع قادة التقنية والمؤسسين والمشغلين.",
+    channelTop10Description: "قوائم مرتبة للمنصات والقادة والشركات والاتجاهات.",
+    channelVideosDescription: "تغطية تقنية بالفيديو وإحاطات تنفيذية.",
+    channelEventsDescription: "فعاليات وندوات ومؤتمرات وجلسات مباشرة.",
+    channelReportsDescription: "تقارير بحثية وملفات بيضاء وإحاطات مؤسسية.",
+    feed: "الخلاصة",
+    mobile: "الموبايل",
     video: "فيديو",
     podcasts: "بودكاست",
     reviews: "مراجعات",
     live: "مباشر",
     jobs: "وظائف",
     devices: "الأجهزة",
+    itRooms: "غرف التقنية",
+    mediaKit: "ملف الإعلام",
+    editorialTeam: "فريق التحرير",
+    authors: "الكتاب",
+    trustCenter: "مركز الثقة",
+    careers: "الوظائف",
+    advertise: "إعلانات",
+    editorial: "التحرير",
+    reports: "التقارير",
+    liveEvents: "الفعاليات المباشرة",
+    brandTagline: "غرفة أخبار تقنية احترافية",
+    footerTagline: "ذكاء اصطناعي، أمن، سحابة، شركات ناشئة، مراجعات",
+    footerText: "منصة إعلامية تقنية احترافية تغطي الذكاء الاصطناعي، الأمن السيبراني، السحابة، الشركات الناشئة، المراجعات، والشروحات.",
+    siteBreakingText: "تنبيهات الأخبار العاجلة جاهزة للتغطية التقنية",
     newsletter: "النشرة",
     membership: "العضوية",
     community: "المجتمع",
@@ -367,6 +394,8 @@ const uiTranslations = {
     alerts: "التنبيهات",
     profile: "الملف الشخصي",
     signIn: "تسجيل الدخول",
+    lightMode: "فاتح",
+    darkMode: "داكن",
     categories: "الفئات",
     magazine: "المجلة",
     trending: "الرائج",
@@ -382,16 +411,16 @@ const uiTranslations = {
     mostPopular: "الأكثر قراءة",
     personalizedForYou: "مخصص لك",
     smartRecommendations: "توصيات ذكية",
-    basedOnSignals: "بناء على قراءاتك",
-    newsroomSignals: "موصى به من إشارات غرفة الأخبار",
+    basedOnSignals: "بناء على إشارات قراءتك",
+    newsroomSignals: "موصى به من غرفة الأخبار",
     tuneProfile: "عدّل ملفك",
-    signInPersonalize: "سجّل لتخصيص المحتوى",
+    signInPersonalize: "سجل لتخصيص المحتوى",
     latestFeed: "آخر الأخبار",
     freshCoverage: "تغطية تقنية جديدة",
     topics: "المواضيع",
     browseNewsroom: "تصفح غرفة الأخبار",
     languageNoticeTitle: "الموقع يعمل الآن بالعربية",
-    languageNoticeBody: "تتغير الواجهة واتجاه القراءة، وتظهر ترجمات المقالات عندما يضيفها فريق التحرير."
+    languageNoticeBody: "تتغير الواجهة واتجاه القراءة، وتظهر نسخة عربية للمحتوى العام والمقالات عند اختيار العربية."
   }
 };
 let siteSettings = {
@@ -1020,7 +1049,8 @@ function setStructuredData(schema) {
 
 async function loadBootstrap() {
   try {
-    const response = await fetch("/api/bootstrap", { cache: "no-store" });
+    const languageParam = currentLanguage && currentLanguage !== "en" ? `?lang=${encodeURIComponent(currentLanguage)}` : "";
+    const response = await fetch(`/api/bootstrap${languageParam}`, { cache: "no-store" });
     if (!response.ok) throw new Error("Bootstrap API failed");
     const data = await response.json();
     categories = data.categories?.length ? data.categories.filter((category) => !isQaArtifact(`${category.slug} ${category.name}`)) : categories;
@@ -1106,6 +1136,47 @@ function t(key, fallback = "") {
   return uiTranslations[currentLanguage]?.[key] || fallback || key;
 }
 
+function utilityLabel(link) {
+  const byUrl = {
+    "#/media-kit": "mediaKit",
+    "#/editorial-team": "editorialTeam",
+    "#/authors": "authors",
+    "#/trust-center": "trustCenter",
+    "#/careers": "careers",
+    "#/advertise": "advertise",
+    "#/editorial": "editorial",
+    "#/reports": "reports",
+    "#/events": "liveEvents"
+  };
+  return t(byUrl[link.url] || "", link.label);
+}
+
+function localizedChannel(channel = {}) {
+  const labels = {
+    news: "news",
+    articles: "articles",
+    interviews: "interviews",
+    "top-10": "top10",
+    videos: "video",
+    events: "liveEvents",
+    reports: "reports"
+  };
+  const descriptions = {
+    news: "channelNewsDescription",
+    articles: "channelArticlesDescription",
+    interviews: "channelInterviewsDescription",
+    "top-10": "channelTop10Description",
+    videos: "channelVideosDescription",
+    events: "channelEventsDescription",
+    reports: "channelReportsDescription"
+  };
+  return {
+    ...channel,
+    name: t(labels[channel.slug] || "", channel.name),
+    description: t(descriptions[channel.slug] || "", channel.description)
+  };
+}
+
 function applyLanguageSettings() {
   const language = activeLanguage();
   document.documentElement.lang = language.code || "en";
@@ -1161,11 +1232,11 @@ function applySiteSettings() {
     node.textContent = siteSettings.brandName || "Tech Magazine";
   });
   const brandSmall = document.querySelector(".site-header .brand small");
-  if (brandSmall) brandSmall.textContent = siteSettings.brandTagline || "";
+  if (brandSmall) brandSmall.textContent = t("brandTagline", siteSettings.brandTagline || "");
   const footerSmall = document.querySelector(".footer-brand small");
-  if (footerSmall) footerSmall.textContent = siteSettings.footerTagline || siteSettings.brandTagline || "";
+  if (footerSmall) footerSmall.textContent = t("footerTagline", siteSettings.footerTagline || siteSettings.brandTagline || "");
   const footerIntro = document.querySelector("[data-footer-intro]");
-  if (footerIntro) footerIntro.textContent = siteSettings.footerText || "";
+  if (footerIntro) footerIntro.textContent = t("footerText", siteSettings.footerText || "");
   const utilityBar = document.querySelector("[data-utility-bar]");
   if (utilityBar) {
     utilityBar.hidden = !siteSettings.showUtilityBar;
@@ -1177,7 +1248,7 @@ function applySiteSettings() {
       { label: "Trust center", url: "#/trust-center" },
       { label: "Careers", url: "#/careers" }
     ].filter((link, index, list) => link.url && list.findIndex((item) => item.url === link.url) === index);
-    utilityBar.innerHTML = utilityLinks.map((link) => `<a href="${escapeHtml(link.url)}">${escapeHtml(link.label)}</a>`).join("");
+    utilityBar.innerHTML = utilityLinks.map((link) => `<a href="${escapeHtml(link.url)}">${escapeHtml(utilityLabel(link))}</a>`).join("");
   }
   applyTheme();
 }
@@ -1451,15 +1522,15 @@ function renderNav() {
   const primaryLinks = [
     ["#/", t("home", "Home")],
     ["#/search", t("search", "Search")],
-    ["#/feed", "Feed"],
-    ["#/mobile", "Mobile"],
+    ["#/feed", t("feed", "Feed")],
+    ["#/mobile", t("mobile", "Mobile")],
     ["#/videos", t("video", "Video")],
     ["#/podcasts", t("podcasts", "Podcasts")],
     ["#/reviews", t("reviews", "Reviews")],
     ["#/live", t("live", "Live")],
     ["#/jobs", t("jobs", "Jobs")],
     ["#/devices", t("devices", "Devices")],
-    ["#/it-rooms", "IT Rooms"],
+    ["#/it-rooms", t("itRooms", "IT Rooms")],
     ["#/newsletter", t("newsletter", "Newsletter")],
     ["#/membership", t("membership", "Membership")],
     ["#/community", t("community", "Community")],
@@ -1478,7 +1549,10 @@ function renderNav() {
       <small>${escapeHtml(category.description)}</small>
     </a>
   `).join("");
-  const megaChannels = channels.map((channel) => `<a href="#/section/${channel.slug}">${escapeHtml(channel.name)}<small>${escapeHtml(channel.description)}</small></a>`).join("");
+  const megaChannels = channels.map((channel) => {
+    const localized = localizedChannel(channel);
+    return `<a href="#/section/${localized.slug}">${escapeHtml(localized.name)}<small>${escapeHtml(localized.description)}</small></a>`;
+  }).join("");
   const megaTrending = trendingArticles(5).map((article, index) => `<a href="#/article/${article.slug}"><span>#${index + 1}</span>${escapeHtml(article.title)}</a>`).join("");
   nav.innerHTML = `
     ${primaryLinks.slice(0, 2).map(([href, label]) => `<a href="${href}">${label}</a>`).join("")}
@@ -1501,7 +1575,7 @@ function renderNav() {
     </div>
     ${primaryLinks.slice(2).map(([href, label]) => `<a href="${href}">${label}</a>`).join("")}
     <select class="language-switcher" data-language-switch aria-label="Language">${languageOptions}</select>
-    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch ${themeMode === "light" ? "dark" : "light"} mode">${themeMode === "light" ? "Dark" : "Light"}</button>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch ${themeMode === "light" ? "dark" : "light"} mode">${themeMode === "light" ? t("darkMode", "Dark") : t("lightMode", "Light")}</button>
   `;
   footerCategories.innerHTML = visibleCategories.map((category) => `<a href="#/category/${category.slug}">${category.name}</a>`).join("");
 }
@@ -1542,8 +1616,8 @@ function siteBreakingBanner() {
   if (!siteSettings.breakingBannerEnabled || !siteSettings.breakingBannerText) return "";
   return `
     <a class="breaking-site-banner" href="${escapeHtml(siteSettings.breakingBannerUrl || "#/")}">
-      <span>Breaking</span>
-      <strong>${escapeHtml(siteSettings.breakingBannerText)}</strong>
+      <span>${t("breakingNews", "Breaking")}</span>
+      <strong>${escapeHtml(t("siteBreakingText", siteSettings.breakingBannerText))}</strong>
     </a>
   `;
 }
@@ -6354,12 +6428,15 @@ document.addEventListener("click", async (event) => {
   }
 });
 
-document.addEventListener("change", (event) => {
+document.addEventListener("change", async (event) => {
   const languageSwitch = event.target.closest("[data-language-switch]");
   if (!languageSwitch) return;
   currentLanguage = languageSwitch.value || "en";
   localStorage.setItem("tm_language", currentLanguage);
   applyLanguageSettings();
+  languageSwitch.disabled = true;
+  await loadBootstrap();
+  languageSwitch.disabled = false;
   renderNav();
   renderRoute();
 });

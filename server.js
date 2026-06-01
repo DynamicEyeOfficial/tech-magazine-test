@@ -5660,7 +5660,8 @@ const httpServer = createServer(async (request, response) => {
 
   if (url.pathname === "/api/bootstrap") {
     if (!apiReadAllowed(request, response, "api-bootstrap", 240, 60 * 1000)) return;
-    const bootstrap = await cached("bootstrap:v1", config.cacheTtlSeconds, () => getBootstrap());
+    const languageCode = String(url.searchParams.get("lang") || url.searchParams.get("language") || "en").trim().toLowerCase();
+    const bootstrap = await cached(`bootstrap:v1:${languageCode || "en"}`, config.cacheTtlSeconds, () => getBootstrap(languageCode));
     const articlePage = paginatedCollection(bootstrap.articles || [], url, { defaultLimit: 100, maxLimit: 100 });
     const eventPage = paginatedCollection(bootstrap.events || [], url, { defaultLimit: 24, maxLimit: 100 });
     const jobPage = paginatedCollection(bootstrap.jobs || [], url, { defaultLimit: 24, maxLimit: 100 });
