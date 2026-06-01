@@ -463,6 +463,8 @@ let siteSettings = {
 let notifications = [];
 let notificationPreferences = null;
 let savedSearchFilters = [];
+let readerAccountNotice = "";
+let notificationNotice = "";
 
 const app = document.querySelector("#app");
 const nav = document.querySelector("[data-nav]");
@@ -803,6 +805,19 @@ function escapeHtml(value) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function isValidEmail(value) {
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(value || "").trim());
+}
+
+function readerFormError(activeForm, message) {
+  const target = activeForm.querySelector("[data-form-message]");
+  if (target) {
+    target.textContent = message;
+    target.classList.add("is-error");
+  }
+  return false;
 }
 
 function listenerKey() {
@@ -2907,7 +2922,7 @@ async function renderAccount() {
     </section>
     ${readerSession.reader ? `
       <section class="content-band reader-command-center">
-        <form class="reader-card account-profile-card profile-command-card" data-reader-profile>
+        <form class="reader-card account-profile-card profile-command-card" data-reader-profile novalidate>
           <div class="profile-summary">
             ${readerSession.reader.avatar ? `<img src="${escapeHtml(readerSession.reader.avatar)}" alt="${escapeHtml(readerName)}">` : `<div class="profile-initial">${escapeHtml(readerInitial)}</div>`}
             <div>
@@ -2917,8 +2932,8 @@ async function renderAccount() {
             </div>
           </div>
           <div class="profile-fields">
-            <label>Name<input name="name" value="${escapeHtml(readerName)}" required></label>
-            <label>Avatar URL<input name="avatar" value="${escapeHtml(readerSession.reader.avatar || "")}" placeholder="https://..."></label>
+            <label>Name<input name="name" value="${escapeHtml(readerName)}" autocomplete="name" required></label>
+            <label>Avatar URL<input name="avatar" value="${escapeHtml(readerSession.reader.avatar || "")}" placeholder="https://..." autocomplete="url"></label>
             <label>Bio<textarea name="bio" placeholder="Tell readers what you care about">${escapeHtml(readerSession.reader.bio || "")}</textarea></label>
           </div>
           <div class="preference-editor">
@@ -2950,7 +2965,7 @@ async function renderAccount() {
             <button class="button primary" type="submit">Save profile and interests</button>
             <button class="button ghost" type="button" data-reader-logout>Log out</button>
           </div>
-          <p class="form-message" data-form-message></p>
+          <p class="form-message ${readerAccountNotice ? "success" : ""}" data-form-message>${escapeHtml(readerAccountNotice)}</p>
         </form>
         <aside class="reader-account-rail">
           <section class="reader-card progress-card">
@@ -3017,22 +3032,22 @@ async function renderAccount() {
             <article><strong>3</strong><span>Receive alerts, newsletters, and feed recommendations.</span></article>
           </div>
         </div>
-        <form class="reader-card auth-card" data-reader-login>
+        <form class="reader-card auth-card" data-reader-login novalidate>
           <span>Welcome back</span>
           <h2>Sign in</h2>
           <p>Use your reader account to save articles, comment, and personalize recommendations.</p>
-          <label>Email<input type="email" name="email" placeholder="you@example.com" required></label>
-          <label>Password<input type="password" name="password" placeholder="Your password" required></label>
+          <label>Email<input type="email" name="email" placeholder="you@example.com" autocomplete="email" inputmode="email" required></label>
+          <label>Password<input type="password" name="password" placeholder="Your password" autocomplete="current-password" required></label>
           <button class="button primary" type="submit">Sign in</button>
           <p class="form-message" data-form-message></p>
         </form>
-        <form class="reader-card auth-card featured-auth" data-reader-register>
+        <form class="reader-card auth-card featured-auth" data-reader-register novalidate>
           <span>New reader</span>
           <h2>Create account</h2>
           <p>Start a free profile for bookmarks, followed authors, alerts, and community activity.</p>
-          <label>Name<input name="name" placeholder="Joe Ghawi" required></label>
-          <label>Email<input type="email" name="email" placeholder="joe@example.com" required></label>
-          <label>Password<input type="password" name="password" minlength="8" placeholder="At least 8 characters" required></label>
+          <label>Name<input name="name" placeholder="Joe Ghawi" autocomplete="name" required></label>
+          <label>Email<input type="email" name="email" placeholder="joe@example.com" autocomplete="email" inputmode="email" required></label>
+          <label>Password<input type="password" name="password" minlength="8" placeholder="At least 8 characters" autocomplete="new-password" required></label>
           <button class="button primary" type="submit">Create account</button>
           <p class="form-message" data-form-message></p>
         </form>
@@ -3704,7 +3719,7 @@ async function renderNotifications() {
           </article>
         `).join("") || `<p class="muted">No notifications sent yet.</p>`}
       </section>
-      <form class="admin-form reader-card alert-preferences-card" data-notification-preferences>
+      <form class="admin-form reader-card alert-preferences-card" data-notification-preferences novalidate>
         <div class="card-heading-row">
           <div>
             <span>Preference center</span>
@@ -3728,7 +3743,7 @@ async function renderNotifications() {
           </div>
           <button class="button primary" type="submit">Save preferences</button>
           <button class="button ghost" type="button" data-enable-push>Enable Firebase push</button>
-          <p class="form-message" data-form-message>${prefs.pushEnabled ? "Firebase push is connected for this reader." : ""}</p>
+          <p class="form-message ${notificationNotice ? "success" : ""}" data-form-message>${escapeHtml(notificationNotice || (prefs.pushEnabled ? "Firebase push is connected for this reader." : ""))}</p>
         ` : `
           <div class="alert-locked-state">
             <strong>Create a reader account to save preferences.</strong>
@@ -6406,6 +6421,8 @@ document.addEventListener("click", async (event) => {
       readerSession = { token: "", reader: null, bookmarks: [], social: { follows: [], reputation: { points: 0, badges: [] }, gamification: null } };
       readerExperience = null;
       notificationPreferences = null;
+      readerAccountNotice = "";
+      notificationNotice = "";
       loadNotifications().catch(() => {});
       renderNav();
       renderAccount();
@@ -6600,10 +6617,31 @@ document.addEventListener("submit", async (event) => {
     const activeForm = readerLogin || readerRegister || readerProfile;
     const message = activeForm.querySelector("[data-form-message]");
     const endpoint = readerLogin ? "/api/reader/login" : readerRegister ? "/api/reader/register" : "/api/reader/profile";
+    readerAccountNotice = "";
+    if (message) {
+      message.textContent = "";
+      message.classList.remove("is-error");
+    }
+    const formData = new FormData(activeForm);
+    const payload = Object.fromEntries(formData);
+    if (readerRegister && String(payload.name || "").trim().length < 2) {
+      readerFormError(activeForm, "Enter your name before creating a reader account.");
+      return;
+    }
+    if ((readerLogin || readerRegister) && !isValidEmail(payload.email)) {
+      readerFormError(activeForm, "Enter a valid email address, for example joe@example.com.");
+      return;
+    }
+    if ((readerLogin || readerRegister) && String(payload.password || "").length < 8) {
+      readerFormError(activeForm, "Enter a password with at least 8 characters.");
+      return;
+    }
+    if (readerProfile && String(payload.name || "").trim().length < 2) {
+      readerFormError(activeForm, "Enter a display name with at least 2 characters.");
+      return;
+    }
     if (message) message.textContent = "Saving...";
     try {
-      const formData = new FormData(activeForm);
-      const payload = Object.fromEntries(formData);
       if (readerProfile) {
         payload.preferredCategories = formData.getAll("preferredCategories");
         payload.preferredAuthors = formData.getAll("preferredAuthors");
@@ -6616,8 +6654,10 @@ document.addEventListener("submit", async (event) => {
       if (result.token) saveReaderSession(result);
       if (result.reader) readerSession.reader = result.reader;
       readerExperience = null;
-      if (message) message.textContent = result.message || (response.ok ? "Saved." : "Could not save.");
+      readerAccountNotice = result.message || (response.ok ? (readerProfile ? "Profile saved." : "Signed in successfully.") : "Could not save.");
+      if (message) message.textContent = readerAccountNotice;
       await loadReaderSession();
+      await loadNotifications();
       renderNav();
       renderAccount();
     } catch {
@@ -6714,6 +6754,7 @@ document.addEventListener("submit", async (event) => {
       window.location.hash = "#/account";
       return;
     }
+    notificationNotice = "";
     const form = new FormData(notificationPrefs);
     const payload = {
       breaking: form.has("breaking"),
@@ -6733,7 +6774,12 @@ document.addEventListener("submit", async (event) => {
       });
       const result = await response.json();
       if (result.preferences) notificationPreferences = result.preferences;
-      if (message) message.textContent = result.message || (response.ok ? "Saved." : "Could not save.");
+      notificationNotice = result.message || (response.ok ? "Notification preferences saved." : "Could not save.");
+      if (message) {
+        message.textContent = notificationNotice;
+        message.classList.toggle("is-error", !response.ok);
+      }
+      renderNotifications();
     } catch {
       if (message) message.textContent = "Could not reach the server.";
     }

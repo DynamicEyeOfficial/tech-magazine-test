@@ -1245,6 +1245,22 @@ textarea {
   color: var(--muted);
 }
 
+.form-message.success {
+  color: #5ff0a8;
+}
+
+.form-message.is-error {
+  color: #ff7b93;
+}
+
+:root[data-theme="light"] .form-message.success {
+  color: #087b4d;
+}
+
+:root[data-theme="light"] .form-message.is-error {
+  color: #b91c1c;
+}
+
 .page-hero,
 .author-profile {
   width: min(1180px, calc(100% - 36px));
