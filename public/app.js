@@ -1246,8 +1246,7 @@ function trackExternalPageView(path, title, articleSlug = "") {
 async function loadReaderSession() {
   if (!readerSession.token) return;
   try {
-    const response = await fetch("/api/reader/me", { headers: authHeaders(), cache: "no-store" });
-    const data = await response.json();
+    const { data } = await fetchJsonWithRetry("/api/reader/me", { headers: authHeaders(), cache: "no-store" });
     if (!data.ok) {
       localStorage.removeItem("tm_reader_token");
       readerSession = { token: "", reader: null, bookmarks: [], social: { follows: [], reputation: { points: 0, badges: [] }, gamification: null } };
@@ -1256,7 +1255,7 @@ async function loadReaderSession() {
     }
     readerSession.reader = data.reader;
     readerSession.bookmarks = data.bookmarks || [];
-    const social = await fetch("/api/reader/social", { headers: authHeaders(), cache: "no-store" }).then((item) => item.json()).catch(() => null);
+    const social = await fetchJsonWithRetry("/api/reader/social", { headers: authHeaders(), cache: "no-store" }).then((item) => item.data).catch(() => null);
     if (social?.ok) readerSession.social = social;
   } catch {
     readerSession = { ...readerSession, reader: null, bookmarks: [], social: { follows: [], reputation: { points: 0, badges: [] }, gamification: null } };
@@ -1266,6 +1265,34 @@ async function loadReaderSession() {
 
 function authHeaders(extra = {}) {
   return readerSession.token ? { ...extra, Authorization: `Bearer ${readerSession.token}` } : extra;
+}
+
+async function fetchJsonWithRetry(url, options = {}, attempts = 3) {
+  let lastError = null;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      const response = await fetch(url, options);
+      const text = await response.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { ok: false, message: response.ok ? "The server returned an unreadable response." : "The server is warming up. Try again in a moment." };
+      }
+      if (response.ok || ![502, 503, 504].includes(response.status) || attempt === attempts - 1) {
+        return { response, data };
+      }
+      lastError = new Error(data.message || `Transient server response ${response.status}`);
+    } catch (error) {
+      lastError = error;
+      if (attempt === attempts - 1) break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 700 + attempt * 900));
+  }
+  return {
+    response: { ok: false, status: 0 },
+    data: { ok: false, message: lastError?.message || "Could not reach the server." }
+  };
 }
 
 function analyticsDeviceType() {
@@ -1369,11 +1396,10 @@ async function loadSavedSearchFilters() {
 
 async function loadNotifications() {
   try {
-    const response = await fetch("/api/notifications", { headers: authHeaders(), cache: "no-store" });
-    const data = await response.json();
+    const { data } = await fetchJsonWithRetry("/api/notifications", { headers: authHeaders(), cache: "no-store" });
     notifications = data.notifications || [];
     if (readerSession.token) {
-      const prefs = await fetch("/api/notifications/preferences", { headers: authHeaders(), cache: "no-store" }).then((item) => item.json());
+      const prefs = await fetchJsonWithRetry("/api/notifications/preferences", { headers: authHeaders(), cache: "no-store" }).then((item) => item.data);
       if (prefs.ok) notificationPreferences = prefs.preferences;
     }
   } catch {
@@ -6491,12 +6517,11 @@ document.addEventListener("submit", async (event) => {
         payload.preferredCategories = formData.getAll("preferredCategories");
         payload.preferredAuthors = formData.getAll("preferredAuthors");
       }
-      const response = await fetch(endpoint, {
+      const { response, data: result } = await fetchJsonWithRetry(endpoint, {
         method: "POST",
         headers: readerProfile ? authHeaders({ "Content-Type": "application/json" }) : { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const result = await response.json();
       if (result.token) saveReaderSession(result);
       if (result.reader) readerSession.reader = result.reader;
       readerExperience = null;
