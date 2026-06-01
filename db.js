@@ -2432,6 +2432,38 @@ export function getAnalyticsSummary() {
     zeroResultSearches: database.prepare("SELECT COUNT(*) AS count FROM search_events WHERE result_count = 0").get().count,
     topQueries: database
       .prepare("SELECT query, COUNT(*) AS count, MAX(result_count) AS maxResults FROM search_events WHERE normalized_query != '' GROUP BY normalized_query ORDER BY count DESC, MAX(created_at) DESC LIMIT 8")
+      .all(),
+    daily: database
+      .prepare(`
+        SELECT date(created_at) AS date,
+          COUNT(*) AS searches,
+          SUM(CASE WHEN result_count = 0 THEN 1 ELSE 0 END) AS zeroResults
+        FROM search_events
+        GROUP BY date(created_at)
+        ORDER BY date DESC
+        LIMIT 14
+      `)
+      .all()
+      .reverse(),
+    byContentType: database
+      .prepare(`
+        SELECT COALESCE(NULLIF(content_type, ''), 'all') AS contentType,
+          COUNT(*) AS searches
+        FROM search_events
+        GROUP BY COALESCE(NULLIF(content_type, ''), 'all')
+        ORDER BY searches DESC
+        LIMIT 8
+      `)
+      .all(),
+    devices: database
+      .prepare(`
+        SELECT COALESCE(NULLIF(device_type, ''), 'unknown') AS deviceType,
+          COUNT(*) AS searches
+        FROM search_events
+        GROUP BY COALESCE(NULLIF(device_type, ''), 'unknown')
+        ORDER BY searches DESC
+        LIMIT 8
+      `)
       .all()
   };
 
@@ -2474,6 +2506,20 @@ export function getAnalyticsSummary() {
     growth: database.prepare("SELECT date(created_at) AS date, COUNT(*) AS subscribers FROM subscribers GROUP BY date(created_at) ORDER BY date DESC LIMIT 14").all(),
     newsletterEvents: database.prepare("SELECT event_type AS eventType, COUNT(*) AS count FROM newsletter_email_events GROUP BY event_type ORDER BY count DESC").all()
   };
+  const dailyTraffic = database
+    .prepare(`
+      SELECT date(created_at) AS date,
+        COUNT(*) AS events,
+        SUM(CASE WHEN event_type = 'page_view' THEN 1 ELSE 0 END) AS pageViews,
+        SUM(CASE WHEN event_type = 'article_view' THEN 1 ELSE 0 END) AS articleViews,
+        SUM(CASE WHEN event_type = 'engagement' THEN 1 ELSE 0 END) AS engagements
+      FROM analytics_events
+      GROUP BY date(created_at)
+      ORDER BY date DESC
+      LIMIT 14
+    `)
+    .all()
+    .reverse();
   const contentReports = contentEngagement.map((item) => ({
     slug: item.slug,
     title: item.title,
@@ -2484,7 +2530,7 @@ export function getAnalyticsSummary() {
     completionGrade: Number(item.avgScrollDepth || 0) >= 75 ? "strong" : Number(item.avgScrollDepth || 0) >= 45 ? "average" : "needs work"
   }));
   const revenue = getRevenueSummary();
-  return { ...base, contentEngagement, authorPerformance, trafficSources, searchAnalytics, realtime, deviceAnalytics, geoAnalytics, heatmap, subscriberAnalytics, contentReports, revenue };
+  return { ...base, dailyTraffic, contentEngagement, authorPerformance, trafficSources, searchAnalytics, realtime, deviceAnalytics, geoAnalytics, heatmap, subscriberAnalytics, contentReports, revenue };
 }
 
 export function getPublicCredibilitySummary() {

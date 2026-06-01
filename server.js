@@ -4681,6 +4681,9 @@ function simpleAdminPage(user, page) {
     const alertRows = intelligence.operationalAlerts.map((item) => `<tr><td><span class="status">${escapeHtml(item.severity)}</span></td><td><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.action)}</small></td></tr>`).join("");
     const readinessRows = Object.entries(intelligence.readiness).map(([key, ready]) => `<article class="${ready ? "ready" : "blocked"}"><strong>${ready ? "Ready" : "Review"}</strong><span>${escapeHtml(key.replace(/([A-Z])/g, " $1").toLowerCase())}</span></article>`).join("");
     const subscriberRows = analytics.subscriberAnalytics.growth.map((item) => `<tr><td>${escapeHtml(item.date)}</td><td>${Number(item.subscribers || 0).toLocaleString()}</td></tr>`).join("");
+    const topSearch = analytics.searchAnalytics.topQueries[0];
+    const searchDailyRows = analytics.searchAnalytics.daily.map((item) => `<tr><td>${escapeHtml(item.date)}</td><td>${Number(item.searches || 0).toLocaleString()}</td><td>${Number(item.zeroResults || 0).toLocaleString()}</td></tr>`).join("");
+    const searchTypeRows = analytics.searchAnalytics.byContentType.map((item) => `<tr><td>${escapeHtml(item.contentType)}</td><td>${Number(item.searches || 0).toLocaleString()}</td></tr>`).join("");
     const miniBarChart = (title, rows, labelKey, valueKey, empty = "No data yet.") => {
       const normalizedRows = rows.slice(0, 8);
       const max = Math.max(1, ...normalizedRows.map((row) => Number(row[valueKey] || 0)));
@@ -4697,6 +4700,28 @@ function simpleAdminPage(user, page) {
                   <div><i style="width:${width}%"></i></div>
                   <strong>${value.toLocaleString()}</strong>
                 </div>
+              `;
+            }).join("") || `<p class="muted">${escapeHtml(empty)}</p>`}
+          </div>
+        </section>
+      `;
+    };
+    const verticalChart = (title, rows, valueKey, labelKey = "date", empty = "No data yet.") => {
+      const normalizedRows = rows.slice(-10);
+      const max = Math.max(1, ...normalizedRows.map((row) => Number(row[valueKey] || 0)));
+      return `
+        <section class="admin-panel analytics-chart-card analytics-chart-feature">
+          <h2>${escapeHtml(title)}</h2>
+          <div class="analytics-columns" role="img" aria-label="${escapeHtml(title)} chart">
+            ${normalizedRows.map((row) => {
+              const value = Number(row[valueKey] || 0);
+              const height = Math.max(8, Math.round((value / max) * 100));
+              return `
+                <article>
+                  <div><i style="height:${height}%"></i></div>
+                  <strong>${value.toLocaleString()}</strong>
+                  <span>${escapeHtml(String(row[labelKey] || "").replace(new Date().getFullYear().toString(), "").replace(/^-/, ""))}</span>
+                </article>
               `;
             }).join("") || `<p class="muted">${escapeHtml(empty)}</p>`}
           </div>
@@ -4720,6 +4745,25 @@ function simpleAdminPage(user, page) {
         <article><span>Avg time on page</span><strong>${Number(analytics.avgDurationSeconds).toLocaleString()}s</strong></article>
         <article><span>Avg scroll depth</span><strong>${Number(analytics.avgScrollDepth).toLocaleString()}%</strong></article>
         <article><span>MRR estimate</span><strong>${money(analytics.revenue.monthlyRecurring)}</strong></article>
+      </section>
+      <section class="admin-panel analytics-command-center">
+        <div>
+          <span>Search analytics</span>
+          <h2>Search demand is visible and tracked</h2>
+          <p class="muted">Queries, zero-result risk, content-type demand, and daily search volume are shown here before the long report tables.</p>
+        </div>
+        <div class="analytics-command-metrics">
+          <article><span>Total searches</span><strong>${Number(analytics.searchAnalytics.searches || 0).toLocaleString()}</strong></article>
+          <article><span>Zero-result searches</span><strong>${Number(analytics.searchAnalytics.zeroResultSearches || 0).toLocaleString()}</strong></article>
+          <article><span>Top query</span><strong>${escapeHtml(topSearch?.query || "No searches yet")}</strong></article>
+          <article><span>Max results found</span><strong>${Number(topSearch?.maxResults || 0).toLocaleString()}</strong></article>
+        </div>
+      </section>
+      <section class="admin-grid two analytics-chart-grid analytics-priority-charts">
+        ${verticalChart("Daily traffic events", analytics.dailyTraffic, "events", "date", "No traffic events yet.")}
+        ${verticalChart("Daily search volume", analytics.searchAnalytics.daily, "searches", "date", "No search events yet.")}
+        ${miniBarChart("Search analytics by query", analytics.searchAnalytics.topQueries, "query", "count", "No search data yet.")}
+        ${miniBarChart("Search analytics by content type", analytics.searchAnalytics.byContentType, "contentType", "searches", "No content-type search data yet.")}
       </section>
       <section class="admin-panel">
         <h2>Business intelligence readiness</h2>
@@ -4757,6 +4801,10 @@ function simpleAdminPage(user, page) {
       <section class="admin-grid two">
         <section class="admin-panel"><h2>Traffic sources</h2><table><thead><tr><th>Source</th><th>Visits</th></tr></thead><tbody>${sourceRows || "<tr><td colspan='2'>No traffic sources yet.</td></tr>"}</tbody></table></section>
         <section class="admin-panel"><h2>Search intelligence</h2><table><thead><tr><th>Query</th><th>Searches</th><th>Max results</th></tr></thead><tbody>${searchRows || "<tr><td colspan='3'>No search data yet.</td></tr>"}</tbody></table></section>
+      </section>
+      <section class="admin-grid two">
+        <section class="admin-panel"><h2>Daily search analytics</h2><table><thead><tr><th>Date</th><th>Searches</th><th>Zero-result</th></tr></thead><tbody>${searchDailyRows || "<tr><td colspan='3'>No search data yet.</td></tr>"}</tbody></table></section>
+        <section class="admin-panel"><h2>Search content demand</h2><table><thead><tr><th>Content type</th><th>Searches</th></tr></thead><tbody>${searchTypeRows || "<tr><td colspan='2'>No search data yet.</td></tr>"}</tbody></table></section>
       </section>
       <section class="admin-grid two">
         <section class="admin-panel"><h2>Top articles</h2><table><thead><tr><th>Article</th><th>Views</th></tr></thead><tbody>${topArticleRows || "<tr><td colspan='2'>No article traffic yet.</td></tr>"}</tbody></table></section>
