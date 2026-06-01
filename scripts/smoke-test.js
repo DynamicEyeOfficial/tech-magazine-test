@@ -549,6 +549,8 @@ if (cookie) {
     name: "admin workflow operational controls",
     ok: workflowResponse.ok
       && workflowBody.includes("Reporter dashboard")
+      && workflowBody.includes("Editorial notes")
+      && workflowBody.includes("Post editorial note")
       && workflowBody.includes("Task management")
       && workflowBody.includes("Shift management")
       && workflowBody.includes("Journalist productivity tracking")
@@ -641,7 +643,12 @@ if (cookie) {
         message: `Section four newsroom note ${workflowStamp}`
       })
     });
-    checks.push({ name: "admin workflow message create", ok: messageResponse.ok, status: messageResponse.status });
+    const messageBody = await messageResponse.text();
+    checks.push({
+      name: "admin workflow editorial note create",
+      ok: messageResponse.ok && messageBody.includes("Post editorial note") && messageBody.includes(`Section four newsroom note ${workflowStamp}`),
+      status: messageResponse.status
+    });
     const workflowOverviewResponse = await request("/api/workflow/overview?status=all", { headers: { cookie } });
     const workflowOverviewJson = await safeJson(workflowOverviewResponse, "/api/workflow/overview");
     checks.push({

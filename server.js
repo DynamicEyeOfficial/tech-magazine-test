@@ -1249,14 +1249,37 @@ function workflowPage(user, urlOrStatus = "pending_review", statusOrMessage = ""
   const pendingApprovals = operations.approvals.filter((item) => item.status === "requested").length;
   const urgentTasks = operations.tasks.filter((item) => item.priority === "urgent" && item.status !== "done").length;
   const activeShifts = operations.shifts.filter((item) => item.status === "active" || item.status === "scheduled").length;
+  const editorialNoteCount = operations.messages.filter((item) => item.channel === "editorial" || item.articleTitle).length;
   return adminLayout("Review Queue", user, `
-    <section class="admin-heading"><span>Workflow</span><h1>Review queue</h1><a class="button primary" href="/admin/articles/new">New article</a></section>
+    <section class="admin-heading"><span>Workflow</span><h1>Review queue</h1><div class="inline-actions"><a class="button secondary" href="#editorial-notes">Editorial notes</a><a class="button primary" href="/admin/articles/new">New article</a></div></section>
     ${notice ? `<div class="alert success">${escapeHtml(notice)}</div>` : ""}
     <section class="admin-stats">
       <article><span>Pending approvals</span><strong>${Number(pendingApprovals).toLocaleString()}</strong></article>
       <article><span>Open tasks</span><strong>${Number(operations.tasks.filter((item) => item.status !== "done").length).toLocaleString()}</strong></article>
       <article><span>Urgent tasks</span><strong>${Number(urgentTasks).toLocaleString()}</strong></article>
       <article><span>Scheduled shifts</span><strong>${Number(activeShifts).toLocaleString()}</strong></article>
+      <article><span>Editorial notes</span><strong>${Number(editorialNoteCount).toLocaleString()}</strong></article>
+    </section>
+    <section class="admin-panel editorial-notes-panel" id="editorial-notes">
+      <div class="card-heading-row">
+        <div>
+          <span>Editorial notes</span>
+          <h2>Internal article notes and newsroom messages</h2>
+        </div>
+        <strong>${Number(operations.messages.length).toLocaleString()} messages</strong>
+      </div>
+      <p>Attach private notes to an article, leave legal/editorial context, or post a general newsroom message. These notes stay inside the workflow area and are not shown to public readers.</p>
+      <form class="admin-form flat" method="post" action="/admin/workflow/messages">
+        ${csrfInput(user)}
+        <div class="form-grid">
+          <label>Channel<select name="channel"><option value="editorial">Editorial note</option><option value="breaking">Breaking desk</option><option value="legal">Legal review</option><option value="production">Production</option></select></label>
+          <label>Article<select name="articleId"><option value="">General newsroom note</option>${articleOptions}</select></label>
+          <label>Note<textarea name="message" required placeholder="Add an internal editorial note, revision request, legal context, or handoff message."></textarea></label>
+        </div>
+        <button class="button primary" type="submit">Post editorial note</button>
+      </form>
+      <p class="workflow-realtime-status" data-workflow-realtime>Realtime newsroom channel connecting...</p>
+      <div class="workflow-message-list" data-workflow-messages>${messageRows || "<p class='muted'>No editorial notes yet.</p>"}</div>
     </section>
     <section class="admin-panel">
       <h2>Role workspaces</h2>
@@ -1358,21 +1381,6 @@ function workflowPage(user, urlOrStatus = "pending_review", statusOrMessage = ""
     <section class="admin-panel">
       <h2>Journalist productivity tracking</h2>
       <table><thead><tr><th>Journalist</th><th>Articles</th><th>Assignments</th><th>Tasks</th><th>Score</th></tr></thead><tbody>${productivityRows || "<tr><td colspan='5'>No productivity data yet.</td></tr>"}</tbody></table>
-    </section>
-    <section class="admin-panel" id="editorial-notes">
-      <h2>Internal newsroom chat and Editorial notes</h2>
-      <p>Post an internal newsroom message or attach an editorial note to a specific article. These notes stay inside the workflow area and are not shown to public readers.</p>
-      <form class="admin-form flat" method="post" action="/admin/workflow/messages">
-        ${csrfInput(user)}
-        <div class="form-grid">
-          <label>Channel<select name="channel"><option value="editorial">Editorial</option><option value="breaking">Breaking</option><option value="legal">Legal</option><option value="production">Production</option></select></label>
-          <label>Article<select name="articleId"><option value="">General newsroom</option>${articleOptions}</select></label>
-          <label>Editorial note / internal message<textarea name="message" required></textarea></label>
-        </div>
-        <button class="button primary" type="submit">Post internal note</button>
-      </form>
-      <p class="workflow-realtime-status" data-workflow-realtime>Realtime newsroom channel connecting...</p>
-      <div class="workflow-message-list" data-workflow-messages>${messageRows || "<p class='muted'>No newsroom messages yet.</p>"}</div>
     </section>
   `, "workflow");
 }

@@ -4849,6 +4849,28 @@ table + .pagination-bar,
   font-weight: 800;
 }
 
+.editorial-notes-panel {
+  border-color: rgba(92, 230, 216, 0.36);
+  background:
+    linear-gradient(135deg, rgba(92, 230, 216, 0.1), transparent 38%),
+    var(--panel);
+}
+
+.editorial-notes-panel > p {
+  max-width: 880px;
+  color: var(--muted);
+}
+
+.editorial-notes-panel .workflow-message-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.editorial-notes-panel .topic-row {
+  border-color: rgba(92, 230, 216, 0.18);
+}
+
 .workflow-realtime-status::before {
   content: "";
   width: 8px;
