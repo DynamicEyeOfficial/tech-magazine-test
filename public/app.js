@@ -1199,16 +1199,29 @@ function applyTheme() {
     root.style.setProperty("--muted", "#50636c");
     root.style.setProperty("--line", "rgba(9, 29, 38, 0.14)");
     document.querySelector("meta[name='theme-color']")?.setAttribute("content", "#f6fafb");
-    return;
+  } else {
+    root.style.setProperty("--bg", siteSettings.backgroundColor);
+    root.style.setProperty("--bg-soft", siteSettings.softBackgroundColor);
+    root.style.setProperty("--panel", siteSettings.panelColor);
+    root.style.setProperty("--panel-strong", siteSettings.strongPanelColor);
+    root.style.setProperty("--text", siteSettings.textColor);
+    root.style.setProperty("--muted", siteSettings.mutedColor);
+    root.style.setProperty("--line", "rgba(255, 255, 255, 0.12)");
+    document.querySelector("meta[name='theme-color']")?.setAttribute("content", siteSettings.backgroundColor || "#071014");
   }
-  root.style.setProperty("--bg", siteSettings.backgroundColor);
-  root.style.setProperty("--bg-soft", siteSettings.softBackgroundColor);
-  root.style.setProperty("--panel", siteSettings.panelColor);
-  root.style.setProperty("--panel-strong", siteSettings.strongPanelColor);
-  root.style.setProperty("--text", siteSettings.textColor);
-  root.style.setProperty("--muted", siteSettings.mutedColor);
-  root.style.setProperty("--line", "rgba(255, 255, 255, 0.12)");
-  document.querySelector("meta[name='theme-color']")?.setAttribute("content", siteSettings.backgroundColor || "#071014");
+  syncThemeToggles();
+}
+
+function themeToggleText() {
+  return themeMode === "light" ? t("darkMode", "Dark") : t("lightMode", "Light");
+}
+
+function syncThemeToggles() {
+  const nextMode = themeMode === "light" ? "dark" : "light";
+  document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
+    button.textContent = themeToggleText();
+    button.setAttribute("aria-label", `Switch ${nextMode} mode`);
+  });
 }
 
 function applySiteSettings() {
@@ -1575,7 +1588,7 @@ function renderNav() {
     </div>
     ${primaryLinks.slice(2).map(([href, label]) => `<a href="${href}">${label}</a>`).join("")}
     <select class="language-switcher" data-language-switch aria-label="Language">${languageOptions}</select>
-    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch ${themeMode === "light" ? "dark" : "light"} mode">${themeMode === "light" ? t("darkMode", "Dark") : t("lightMode", "Light")}</button>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch ${themeMode === "light" ? "dark" : "light"} mode">${themeToggleText()}</button>
   `;
   footerCategories.innerHTML = visibleCategories.map((category) => `<a href="#/category/${category.slug}">${category.name}</a>`).join("");
 }
@@ -6058,6 +6071,7 @@ document.addEventListener("click", async (event) => {
     localStorage.setItem("tm_theme", themeMode);
     applyTheme();
     renderNav();
+    syncThemeToggles();
     return;
   }
 
