@@ -4722,7 +4722,7 @@ function simpleAdminPage(user, page) {
       const normalizedRows = rows.slice(0, 8);
       const max = Math.max(1, ...normalizedRows.map((row) => Number(row[valueKey] || 0)));
       return `
-        <section class="admin-panel analytics-chart-card">
+        <section class="admin-panel analytics-chart-card" data-analytics-chart="${escapeHtml(title)}">
           <h2>${escapeHtml(title)}</h2>
           <div class="analytics-bars" role="img" aria-label="${escapeHtml(title)} chart">
             ${normalizedRows.map((row) => {
@@ -4735,7 +4735,7 @@ function simpleAdminPage(user, page) {
                   <strong>${value.toLocaleString()}</strong>
                 </div>
               `;
-            }).join("") || `<p class="muted">${escapeHtml(empty)}</p>`}
+            }).join("") || `<div class="analytics-empty-chart"><span>${escapeHtml(empty)}</span><i></i></div>`}
           </div>
         </section>
       `;
@@ -4744,7 +4744,7 @@ function simpleAdminPage(user, page) {
       const normalizedRows = rows.slice(-10);
       const max = Math.max(1, ...normalizedRows.map((row) => Number(row[valueKey] || 0)));
       return `
-        <section class="admin-panel analytics-chart-card analytics-chart-feature">
+        <section class="admin-panel analytics-chart-card analytics-chart-feature" data-analytics-chart="${escapeHtml(title)}">
           <h2>${escapeHtml(title)}</h2>
           <div class="analytics-columns" role="img" aria-label="${escapeHtml(title)} chart">
             ${normalizedRows.map((row) => {
@@ -4757,7 +4757,7 @@ function simpleAdminPage(user, page) {
                   <span>${escapeHtml(String(row[labelKey] || "").replace(new Date().getFullYear().toString(), "").replace(/^-/, ""))}</span>
                 </article>
               `;
-            }).join("") || `<p class="muted">${escapeHtml(empty)}</p>`}
+            }).join("") || `<div class="analytics-empty-chart"><span>${escapeHtml(empty)}</span><i></i></div>`}
           </div>
         </section>
       `;
@@ -4780,10 +4780,22 @@ function simpleAdminPage(user, page) {
         <article><span>Avg scroll depth</span><strong>${Number(analytics.avgScrollDepth).toLocaleString()}%</strong></article>
         <article><span>MRR estimate</span><strong>${money(analytics.revenue.monthlyRecurring)}</strong></article>
       </section>
+      <section class="admin-panel analytics-overview-panel">
+        <div>
+          <span>Analytics charts</span>
+          <h2>Live traffic, engagement, and search charts</h2>
+          <p class="muted">The analytics dashboard now starts with visible chart cards for traffic, search demand, content performance, sources, devices, geography, subscribers, heatmaps, and revenue signals.</p>
+        </div>
+        <div class="analytics-overview-signals">
+          <article><span>Chart cards</span><strong>8+</strong></article>
+          <article><span>Search blocks</span><strong>${Number((analytics.searchAnalytics.topQueries || []).length + (analytics.searchAnalytics.daily || []).length).toLocaleString()}</strong></article>
+          <article><span>Realtime events</span><strong>${Number(analytics.realtime.events15m || 0).toLocaleString()}</strong></article>
+        </div>
+      </section>
       <section class="admin-panel analytics-command-center">
         <div>
           <span>Search analytics</span>
-          <h2>Search demand is visible and tracked</h2>
+          <h2>Search analytics dashboard</h2>
           <p class="muted">Queries, zero-result risk, content-type demand, and daily search volume are shown here before the long report tables.</p>
         </div>
         <div class="analytics-command-metrics">

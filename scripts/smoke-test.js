@@ -842,7 +842,19 @@ if (cookie) {
     ok: duplicateRoleResponse.ok && duplicateRoleBody.includes("A role named &quot;Writer&quot; already exists."),
     status: duplicateRoleResponse.status
   });
-  await expectAdmin("/admin/analytics", cookie, "Tracked page views");
+  const analyticsPageResponse = await request("/admin/analytics", { headers: { cookie } });
+  const analyticsPageBody = await analyticsPageResponse.text();
+  checks.push({
+    name: "admin analytics charts and search visibility",
+    ok: analyticsPageResponse.ok
+      && analyticsPageBody.includes("Analytics charts")
+      && analyticsPageBody.includes("Search analytics dashboard")
+      && analyticsPageBody.includes("analytics-chart-card")
+      && analyticsPageBody.includes("analytics-columns")
+      && analyticsPageBody.includes("analytics-bars")
+      && analyticsPageBody.includes("Daily search analytics"),
+    status: analyticsPageResponse.status
+  });
   await expectAdmin("/admin/retention", cookie, "Gamification & retention");
   await expectAdmin("/admin/seo", cookie, "Google News, schema, scoring");
   await expectAdmin("/admin/languages", cookie, "Globalization command center", { csrf: true });
