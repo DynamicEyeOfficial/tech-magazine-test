@@ -4871,6 +4871,28 @@ table + .pagination-bar,
   border-color: rgba(92, 230, 216, 0.18);
 }
 
+.newsroom-messages-panel {
+  border-color: rgba(255, 95, 132, 0.3);
+  background:
+    linear-gradient(135deg, rgba(255, 95, 132, 0.1), transparent 34%),
+    var(--panel);
+}
+
+.newsroom-messages-panel > p {
+  max-width: 900px;
+  color: var(--muted);
+}
+
+.newsroom-messages-panel .workflow-message-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.newsroom-messages-panel .topic-row {
+  border-color: rgba(255, 95, 132, 0.18);
+}
+
 .workflow-realtime-status::before {
   content: "";
   width: 8px;

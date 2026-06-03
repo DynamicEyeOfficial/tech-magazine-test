@@ -551,6 +551,8 @@ if (cookie) {
       && workflowBody.includes("Reporter dashboard")
       && workflowBody.includes("Editorial notes")
       && workflowBody.includes("Post editorial note")
+      && workflowBody.includes("Internal newsroom messages")
+      && workflowBody.includes("Post newsroom message")
       && workflowBody.includes("Task management")
       && workflowBody.includes("Shift management")
       && workflowBody.includes("Journalist productivity tracking")
@@ -648,6 +650,23 @@ if (cookie) {
       name: "admin workflow editorial note create",
       ok: messageResponse.ok && messageBody.includes("Post editorial note") && messageBody.includes(`Section four newsroom note ${workflowStamp}`),
       status: messageResponse.status
+    });
+    const newsroomMessageResponse = await request("/admin/workflow/messages", {
+      method: "POST",
+      headers: { cookie, "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        _csrf: workflowCsrf,
+        channel: "production",
+        message: `Section four internal newsroom message ${workflowStamp}`
+      })
+    });
+    const newsroomMessageBody = await newsroomMessageResponse.text();
+    checks.push({
+      name: "admin workflow internal newsroom message create",
+      ok: newsroomMessageResponse.ok
+        && newsroomMessageBody.includes("Post newsroom message")
+        && newsroomMessageBody.includes(`Section four internal newsroom message ${workflowStamp}`),
+      status: newsroomMessageResponse.status
     });
     const workflowOverviewResponse = await request("/api/workflow/overview?status=all", { headers: { cookie } });
     const workflowOverviewJson = await safeJson(workflowOverviewResponse, "/api/workflow/overview");

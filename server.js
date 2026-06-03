@@ -1234,8 +1234,13 @@ function workflowPage(user, urlOrStatus = "pending_review", statusOrMessage = ""
   const calendarRows = operations.calendar.slice(0, 8).map((item) => `
     <tr><td><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.notes || item.articleTitle || "")}</small></td><td>${escapeHtml(item.eventType)}</td><td>${escapeHtml(item.startsAt)}</td><td>${escapeHtml(item.owner || "")}</td><td><span class="status">${escapeHtml(item.status)}</span></td></tr>
   `).join("");
-  const messageRows = operations.messages.slice(0, 8).map((item) => `
+  const editorialMessages = operations.messages.filter((item) => item.channel === "editorial" || item.articleTitle);
+  const internalMessages = operations.messages.filter((item) => !item.articleTitle && item.channel !== "editorial");
+  const editorialMessageRows = editorialMessages.slice(0, 8).map((item) => `
     <article class="topic-row"><span>${escapeHtml(item.channel)} / ${escapeHtml(item.userName || "System")}</span><p>${escapeHtml(item.message)}</p><small>${escapeHtml(item.articleTitle || "General newsroom")} / ${escapeHtml(item.createdAt)}</small></article>
+  `).join("");
+  const internalMessageRows = internalMessages.slice(0, 8).map((item) => `
+    <article class="topic-row"><span>${escapeHtml(item.channel)} / ${escapeHtml(item.userName || "System")}</span><p>${escapeHtml(item.message)}</p><small>Internal newsroom / ${escapeHtml(item.createdAt)}</small></article>
   `).join("");
   const taskRows = operations.tasks.slice(0, 10).map((item) => `
     <tr><td><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.notes || item.articleTitle || "")}</small></td><td>${escapeHtml(item.taskType)}</td><td>${escapeHtml(item.assignee || "Unassigned")}</td><td>${escapeHtml(item.dueAt || "No deadline")}</td><td><span class="status">${escapeHtml(item.status)}</span></td></tr>
@@ -1249,9 +1254,10 @@ function workflowPage(user, urlOrStatus = "pending_review", statusOrMessage = ""
   const pendingApprovals = operations.approvals.filter((item) => item.status === "requested").length;
   const urgentTasks = operations.tasks.filter((item) => item.priority === "urgent" && item.status !== "done").length;
   const activeShifts = operations.shifts.filter((item) => item.status === "active" || item.status === "scheduled").length;
-  const editorialNoteCount = operations.messages.filter((item) => item.channel === "editorial" || item.articleTitle).length;
+  const editorialNoteCount = editorialMessages.length;
+  const internalMessageCount = internalMessages.length;
   return adminLayout("Review Queue", user, `
-    <section class="admin-heading"><span>Workflow</span><h1>Review queue</h1><div class="inline-actions"><a class="button secondary" href="#editorial-notes">Editorial notes</a><a class="button primary" href="/admin/articles/new">New article</a></div></section>
+    <section class="admin-heading"><span>Workflow</span><h1>Review queue</h1><div class="inline-actions"><a class="button secondary" href="#newsroom-messages">Newsroom messages</a><a class="button secondary" href="#editorial-notes">Editorial notes</a><a class="button primary" href="/admin/articles/new">New article</a></div></section>
     ${notice ? `<div class="alert success">${escapeHtml(notice)}</div>` : ""}
     <section class="admin-stats">
       <article><span>Pending approvals</span><strong>${Number(pendingApprovals).toLocaleString()}</strong></article>
@@ -1259,27 +1265,47 @@ function workflowPage(user, urlOrStatus = "pending_review", statusOrMessage = ""
       <article><span>Urgent tasks</span><strong>${Number(urgentTasks).toLocaleString()}</strong></article>
       <article><span>Scheduled shifts</span><strong>${Number(activeShifts).toLocaleString()}</strong></article>
       <article><span>Editorial notes</span><strong>${Number(editorialNoteCount).toLocaleString()}</strong></article>
+      <article><span>Newsroom messages</span><strong>${Number(internalMessageCount).toLocaleString()}</strong></article>
+    </section>
+    <section class="admin-panel newsroom-messages-panel" id="newsroom-messages">
+      <div class="card-heading-row">
+        <div>
+          <span>Internal newsroom messages</span>
+          <h2>Team chat and desk broadcasts</h2>
+        </div>
+        <strong>${Number(internalMessageCount).toLocaleString()} messages</strong>
+      </div>
+      <p>Post internal newsroom messages for editors, reporters, producers, legal, and breaking desk teams. These messages are staff-only and can be sent without attaching them to an article.</p>
+      <form class="admin-form flat" method="post" action="/admin/workflow/messages">
+        ${csrfInput(user)}
+        <div class="form-grid">
+          <label>Channel<select name="channel"><option value="production">Production desk</option><option value="breaking">Breaking desk</option><option value="legal">Legal review</option><option value="editorial">Editorial desk</option></select></label>
+          <label>Message<textarea name="message" required placeholder="Post a staff-only newsroom update, handoff, alert, or team message."></textarea></label>
+        </div>
+        <button class="button primary" type="submit">Post newsroom message</button>
+      </form>
+      <p class="workflow-realtime-status" data-workflow-realtime>Realtime newsroom channel connecting...</p>
+      <div class="workflow-message-list" data-workflow-messages>${internalMessageRows || "<p class='muted'>No internal newsroom messages yet.</p>"}</div>
     </section>
     <section class="admin-panel editorial-notes-panel" id="editorial-notes">
       <div class="card-heading-row">
         <div>
           <span>Editorial notes</span>
-          <h2>Internal article notes and newsroom messages</h2>
+          <h2>Internal article notes</h2>
         </div>
-        <strong>${Number(operations.messages.length).toLocaleString()} messages</strong>
+        <strong>${Number(editorialNoteCount).toLocaleString()} notes</strong>
       </div>
-      <p>Attach private notes to an article, leave legal/editorial context, or post a general newsroom message. These notes stay inside the workflow area and are not shown to public readers.</p>
+      <p>Attach private editorial, legal, or handoff notes to a specific article. These notes stay inside the workflow area and are not shown to public readers.</p>
       <form class="admin-form flat" method="post" action="/admin/workflow/messages">
         ${csrfInput(user)}
         <div class="form-grid">
-          <label>Channel<select name="channel"><option value="editorial">Editorial note</option><option value="breaking">Breaking desk</option><option value="legal">Legal review</option><option value="production">Production</option></select></label>
-          <label>Article<select name="articleId"><option value="">General newsroom note</option>${articleOptions}</select></label>
+          <label>Channel<select name="channel"><option value="editorial">Editorial note</option><option value="legal">Legal review</option><option value="breaking">Breaking desk</option><option value="production">Production</option></select></label>
+          <label>Article<select name="articleId">${articleOptions}</select></label>
           <label>Note<textarea name="message" required placeholder="Add an internal editorial note, revision request, legal context, or handoff message."></textarea></label>
         </div>
         <button class="button primary" type="submit">Post editorial note</button>
       </form>
-      <p class="workflow-realtime-status" data-workflow-realtime>Realtime newsroom channel connecting...</p>
-      <div class="workflow-message-list" data-workflow-messages>${messageRows || "<p class='muted'>No editorial notes yet.</p>"}</div>
+      <div class="workflow-message-list">${editorialMessageRows || "<p class='muted'>No editorial notes yet.</p>"}</div>
     </section>
     <section class="admin-panel">
       <h2>Role workspaces</h2>
