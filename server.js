@@ -1271,7 +1271,7 @@ function workflowPage(user, urlOrStatus = "pending_review", statusOrMessage = ""
       <div class="card-heading-row">
         <div>
           <span>Internal newsroom messages</span>
-          <h2>Team chat and desk broadcasts</h2>
+          <h2>Internal newsroom messages</h2>
         </div>
         <strong>${Number(internalMessageCount).toLocaleString()} messages</strong>
       </div>

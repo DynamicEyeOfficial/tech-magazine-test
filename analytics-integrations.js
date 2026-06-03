@@ -13,6 +13,12 @@ function scriptJson(value) {
 
 export function getAnalyticsIntegrationStatus() {
   return {
+    firstParty: {
+      enabled: true,
+      id: "techmag-first-party",
+      mode: "server_side_events",
+      description: "Built-in first-party analytics powers dashboard charts, search analytics, content performance, and reader engagement while external providers are pending."
+    },
     googleAnalytics: {
       enabled: Boolean(config.googleAnalyticsId),
       id: config.googleAnalyticsId,
@@ -33,6 +39,7 @@ export function getAnalyticsIntegrationStatus() {
       siteId: config.matomoSiteId
     },
     activeProviders: [
+      "First-party analytics",
       config.googleAnalyticsId ? "Google Analytics" : "",
       config.googleTagManagerId ? "Google Tag Manager" : "",
       config.searchConsoleVerification ? "Search Console" : "",

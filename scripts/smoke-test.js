@@ -367,6 +367,13 @@ if (newsletter?.verificationToken) {
   await expectPostJson("/api/newsletter/unsubscribe", { email: newsletterEmail }, (json) => json.ok && /unsubscribed/i.test(json.message || ""));
 }
 const readerEmail = `reader-${Date.now()}@example.com`;
+const readerUsername = `readeruser${Date.now()}`;
+await expectPostJson("/api/reader/register", { name: "Username Reader Smoke", email: readerUsername, password: "password123" }, (json) =>
+  json.ok && Boolean(json.token) && json.reader?.email === `${readerUsername}@reader.local`
+);
+await expectPostJson("/api/reader/login", { email: readerUsername, password: "password123" }, (json) =>
+  json.ok && Boolean(json.token) && json.reader?.email === `${readerUsername}@reader.local`
+);
 const reader = await expectPostJson("/api/reader/register", { name: "Reader Smoke", email: readerEmail, password: "password123" }, (json) => json.ok && Boolean(json.token));
 if (reader?.token) {
   await expectPostJson("/api/reader/profile", {
@@ -925,7 +932,12 @@ if (cookie) {
   const analyticsIntegrationsJson = await safeJson(analyticsIntegrationsResponse, "/api/analytics/integrations");
   checks.push({
     name: "/api/analytics/integrations",
-    ok: analyticsIntegrationsResponse.ok && analyticsIntegrationsJson.ok && Array.isArray(analyticsIntegrationsJson.integrations?.activeProviders) && typeof analyticsIntegrationsJson.integrations?.googleAnalytics?.enabled === "boolean",
+    ok: analyticsIntegrationsResponse.ok
+      && analyticsIntegrationsJson.ok
+      && Array.isArray(analyticsIntegrationsJson.integrations?.activeProviders)
+      && analyticsIntegrationsJson.integrations.activeProviders.includes("First-party analytics")
+      && analyticsIntegrationsJson.integrations?.firstParty?.enabled === true
+      && typeof analyticsIntegrationsJson.integrations?.googleAnalytics?.enabled === "boolean",
     status: analyticsIntegrationsResponse.status
   });
   const seoResponse = await request("/api/seo/summary", { headers: { cookie } });

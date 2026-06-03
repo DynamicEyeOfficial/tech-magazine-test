@@ -8345,9 +8345,9 @@ export function addComment({ articleSlug, userName, userEmail, content, parentId
 
 export function registerReader({ name, email, password }, requestMeta = {}) {
   const cleanName = String(name || "").trim();
-  const cleanEmail = String(email || "").trim().toLowerCase();
+  const cleanEmail = normalizeReaderEmail(email);
   if (cleanName.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cleanEmail) || String(password || "").length < 8) {
-    return { ok: false, message: "Use a valid name, email, and password with at least 8 characters." };
+    return { ok: false, message: "Use a valid name, email or username, and password with at least 8 characters." };
   }
   const id = randomUUID();
   try {
@@ -8361,9 +8361,17 @@ export function registerReader({ name, email, password }, requestMeta = {}) {
 }
 
 export function authenticateReader(email, password, requestMeta = {}) {
-  const reader = database.prepare("SELECT * FROM reader_accounts WHERE email = ? AND status = 'active'").get(String(email || "").trim().toLowerCase());
+  const reader = database.prepare("SELECT * FROM reader_accounts WHERE email = ? AND status = 'active'").get(normalizeReaderEmail(email));
   if (!reader || !verifyPassword(password, reader.password_hash)) return { ok: false, message: "Invalid email or password." };
   return createReaderSession(reader.id, requestMeta);
+}
+
+function normalizeReaderEmail(value) {
+  const clean = String(value || "").trim().toLowerCase();
+  if (!clean) return "";
+  if (clean.includes("@")) return clean;
+  const username = clean.replace(/[^a-z0-9._-]/g, "").replace(/^[._-]+|[._-]+$/g, "");
+  return username.length >= 3 ? `${username}@reader.local` : clean;
 }
 
 export function getReaderBySession(token) {

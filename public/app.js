@@ -423,6 +423,78 @@ const uiTranslations = {
     languageNoticeBody: "تتغير الواجهة واتجاه القراءة، وتظهر نسخة عربية للمحتوى العام والمقالات عند اختيار العربية."
   }
 };
+Object.assign(uiTranslations.ar, {
+  home: "الرئيسية",
+  search: "بحث",
+  sections: "الأقسام",
+  news: "الأخبار",
+  articles: "المقالات",
+  interviews: "المقابلات",
+  top10: "أفضل 10",
+  channelNewsDescription: "أخبار تقنية سريعة وتحديثات السوق.",
+  channelArticlesDescription: "تحليلات أطول وشرح ورؤى تحريرية.",
+  channelInterviewsDescription: "حوارات مع قادة التقنية والمؤسسين والمشغلين.",
+  channelTop10Description: "قوائم مرتبة للمنصات والقادة والشركات والاتجاهات.",
+  channelVideosDescription: "تغطية تقنية بالفيديو وإحاطات تنفيذية.",
+  channelEventsDescription: "فعاليات وندوات ومؤتمرات وجلسات مباشرة.",
+  channelReportsDescription: "تقارير بحثية وملفات بيضاء وإحاطات مؤسسية.",
+  feed: "الخلاصة",
+  mobile: "الموبايل",
+  video: "فيديو",
+  podcasts: "بودكاست",
+  reviews: "مراجعات",
+  live: "مباشر",
+  jobs: "وظائف",
+  devices: "الأجهزة",
+  itRooms: "غرف التقنية",
+  mediaKit: "ملف الإعلام",
+  editorialTeam: "فريق التحرير",
+  authors: "الكتاب",
+  trustCenter: "مركز الثقة",
+  careers: "الوظائف",
+  advertise: "إعلانات",
+  editorial: "التحرير",
+  reports: "التقارير",
+  liveEvents: "الفعاليات المباشرة",
+  brandTagline: "غرفة أخبار تقنية احترافية",
+  footerTagline: "ذكاء اصطناعي، أمن، سحابة، شركات ناشئة، مراجعات",
+  footerText: "منصة إعلامية تقنية احترافية تغطي الذكاء الاصطناعي، الأمن السيبراني، السحابة، الشركات الناشئة، المراجعات، والشروحات.",
+  siteBreakingText: "تنبيهات الأخبار العاجلة جاهزة للتغطية التقنية",
+  newsletter: "النشرة",
+  membership: "العضوية",
+  community: "المجتمع",
+  leaderboard: "المتصدرون",
+  alerts: "التنبيهات",
+  profile: "الملف الشخصي",
+  signIn: "تسجيل الدخول",
+  lightMode: "فاتح",
+  darkMode: "داكن",
+  categories: "الفئات",
+  magazine: "المجلة",
+  trending: "الرائج",
+  breakingNews: "خبر عاجل",
+  sponsoredStory: "قصة ممولة",
+  editorPick: "اختيار المحرر",
+  readStory: "اقرأ القصة",
+  explore: "استكشف",
+  featuredDesk: "مكتب التحرير",
+  editorsWatching: "قصص يتابعها المحررون",
+  liveSignal: "إشارة مباشرة",
+  trendingNow: "الرائج الآن",
+  mostPopular: "الأكثر قراءة",
+  personalizedForYou: "مخصص لك",
+  smartRecommendations: "توصيات ذكية",
+  basedOnSignals: "بناء على إشارات قراءتك",
+  newsroomSignals: "موصى به من غرفة الأخبار",
+  tuneProfile: "عدّل ملفك",
+  signInPersonalize: "سجل لتخصيص المحتوى",
+  latestFeed: "آخر الأخبار",
+  freshCoverage: "تغطية تقنية جديدة",
+  topics: "المواضيع",
+  browseNewsroom: "تصفح غرفة الأخبار",
+  languageNoticeTitle: "الموقع يعمل الآن بالعربية",
+  languageNoticeBody: "تتغير الواجهة واتجاه القراءة، وتظهر نسخة عربية للمحتوى العام والمقالات عند اختيار العربية."
+});
 let siteSettings = {
   brandName: "Tech Magazine",
   brandTagline: "Professional IT newsroom",
@@ -808,7 +880,8 @@ function escapeHtml(value) {
 }
 
 function isValidEmail(value) {
-  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(value || "").trim());
+  const clean = String(value || "").trim();
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean) || /^[a-z0-9][a-z0-9._-]{2,}$/i.test(clean);
 }
 
 function readerFormError(activeForm, message) {
@@ -1197,6 +1270,7 @@ function applyLanguageSettings() {
   document.documentElement.lang = language.code || "en";
   document.documentElement.dir = language.direction || "ltr";
   document.body?.classList.toggle("rtl", language.direction === "rtl");
+  syncLanguageSwitchers();
 }
 
 function applyTheme() {
@@ -1236,6 +1310,21 @@ function syncThemeToggles() {
   document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
     button.textContent = themeToggleText();
     button.setAttribute("aria-label", `Switch ${nextMode} mode`);
+  });
+}
+
+function languageOptionsMarkup() {
+  return languages
+    .map((language) => `<option value="${escapeHtml(language.code)}" ${language.code === currentLanguage ? "selected" : ""}>${escapeHtml(language.nativeName || language.name)}</option>`)
+    .join("");
+}
+
+function syncLanguageSwitchers() {
+  document.querySelectorAll("[data-language-switch]").forEach((select) => {
+    const currentOptions = [...select.options].map((option) => option.value).join("|");
+    const nextOptions = languages.map((language) => language.code).join("|");
+    if (currentOptions !== nextOptions) select.innerHTML = languageOptionsMarkup();
+    select.value = currentLanguage;
   });
 }
 
@@ -1566,9 +1655,6 @@ function renderNav() {
     ["#/notifications", `${t("alerts", "Alerts")}${notifications.filter((item) => !item.readAt).length ? ` (${notifications.filter((item) => !item.readAt).length})` : ""}`],
     ["#/account", readerSession.reader ? t("profile", "Profile") : t("signIn", "Sign in")]
   ];
-  const languageOptions = languages
-    .map((language) => `<option value="${escapeHtml(language.code)}" ${language.code === currentLanguage ? "selected" : ""}>${escapeHtml(language.nativeName || language.name)}</option>`)
-    .join("");
   const visibleCategories = publicCategories();
   const megaTopics = visibleCategories.map((category) => `
     <a class="mega-card" href="#/category/${category.slug}" style="--category:${escapeHtml(category.color)}">
@@ -1602,9 +1688,9 @@ function renderNav() {
       </div>
     </div>
     ${primaryLinks.slice(2).map(([href, label]) => `<a href="${href}">${label}</a>`).join("")}
-    <select class="language-switcher" data-language-switch aria-label="Language">${languageOptions}</select>
-    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch ${themeMode === "light" ? "dark" : "light"} mode">${themeToggleText()}</button>
   `;
+  syncLanguageSwitchers();
+  syncThemeToggles();
   footerCategories.innerHTML = visibleCategories.map((category) => `<a href="#/category/${category.slug}">${category.name}</a>`).join("");
 }
 
@@ -3689,8 +3775,8 @@ async function renderNotifications() {
   setTitle("Notifications", "Manage breaking news, live event, and personalized technology alerts.");
   app.innerHTML = `
     <section class="page-hero compact-hero alert-hero">
-      <span>Alerts and subscriptions</span>
-      <h1>Control exactly how Tech Magazine reaches you</h1>
+      <span>Notification center</span>
+      <h1>Alert center and reader notifications</h1>
       <p>Follow breaking news, live events, favorite categories, authors, newsletters, and future mobile push notifications from one reader preference center.</p>
       <div class="alert-hero-metrics">
         <article><strong>${Number(audienceConversion.sentAlerts || notifications.length || 0).toLocaleString()}</strong><span>alerts sent</span></article>
