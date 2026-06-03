@@ -386,6 +386,8 @@ function workflowEventLabel(type) {
 
 function prependWorkflowEvent(event) {
   if (!workflowMessages || !event?.type) return;
+  if (event.type === "workflow.connected") return;
+  workflowMessages.querySelectorAll(".muted").forEach((item) => item.remove());
   const item = document.createElement("article");
   item.className = "topic-row realtime-event";
   const payload = event.payload || {};
@@ -412,7 +414,9 @@ function connectWorkflowRealtime() {
     try {
       const event = JSON.parse(message.data);
       workflowRealtime.dataset.mode = "live";
-      workflowRealtime.textContent = `${workflowEventLabel(event.type)} update received ${new Date(event.sentAt || Date.now()).toLocaleTimeString()}.`;
+      workflowRealtime.textContent = event.type === "workflow.connected"
+        ? `Realtime newsroom channel live ${new Date(event.sentAt || Date.now()).toLocaleTimeString()}.`
+        : `${workflowEventLabel(event.type)} update received ${new Date(event.sentAt || Date.now()).toLocaleTimeString()}.`;
       prependWorkflowEvent(event);
     } catch {
       workflowRealtime.textContent = "Realtime update received.";

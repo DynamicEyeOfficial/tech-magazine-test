@@ -177,7 +177,7 @@ async function safeJson(response, name) {
   }
 }
 
-function waitForWorkflowSocketEvent(cookie, expectedType, trigger) {
+function waitForWorkflowSocketEvent(cookie, expectedType, trigger, expectedText = "") {
   return new Promise((resolve) => {
     const target = new URL(baseUrl);
     const key = randomBytes(16).toString("base64");
@@ -214,7 +214,7 @@ function waitForWorkflowSocketEvent(cookie, expectedType, trigger) {
         trigger = null;
         await run();
       }
-      if (buffer.includes(`"type":"${expectedType}"`)) {
+      if (buffer.includes(`"type":"${expectedType}"`) && (!expectedText || buffer.includes(expectedText))) {
         const accept = createHash("sha1")
           .update(`${key}258EAFA5-E914-47DA-95CA-C5AB0DC85B11`)
           .digest("base64");
@@ -696,7 +696,7 @@ if (cookie) {
         articleId: workflowArticleId,
         message: realtimeMessage
       })
-    }));
+    }), realtimeMessage);
     checks.push({
       name: "admin workflow websocket realtime",
       ok: realtimeResult.ok,
