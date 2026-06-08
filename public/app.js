@@ -768,18 +768,24 @@ function articleTrustDetails(article, author) {
   };
 }
 
-function articleTrustPanel(article, author) {
-  const trust = articleTrustDetails(article, author);
-  const localizedTrust = currentLanguage === "fr" ? {
+function localizedArticleTrust(trust) {
+  if (currentLanguage !== "fr") return trust;
+  return {
+    ...trust,
     summary: "Article publie avec auteur identifie, source visible, contexte editorial et route de correction.",
     disclosure: "Cet article respecte les standards editoriaux de Tech Magazine. Les equipes commerciales ne controlent pas les conclusions editoriales.",
     correction: trust.correction ? "Mise a jour editoriale disponible pour clarifier le contexte, la methode ou les informations de publication." : "",
-    origin: trust.origin === "original" ? "original" : trust.origin === "imported" ? "importe" : trust.origin,
+    origin: trust.origin === "original" ? "original" : trust.origin === "imported" ? "importe" : trust.origin === "sponsored" ? "sponsorise" : trust.origin,
     statusLabel: trust.statusLabel === "Editorial Reviewed" ? "Verifie par la redaction" : trust.statusLabel,
     checkedBy: trust.checkedBy === "Editorial desk" ? "Bureau editorial" : trust.checkedBy,
     sourceName: trust.sourceName === "Tech Magazine newsroom" ? "Redaction Tech Magazine" : trust.sourceName,
     authorPolicy: trust.authorPolicy ? "Utilise des sources nommees, documents primaires, briefings produit et contexte technique verifie avant publication." : ""
-  } : trust;
+  };
+}
+
+function articleTrustPanel(article, author) {
+  const trust = articleTrustDetails(article, author);
+  const localizedTrust = localizedArticleTrust(trust);
   return `
     <section class="article-trust-panel" id="trust">
       <div class="article-trust-main">
@@ -2171,6 +2177,7 @@ function renderArticle(slug, hydratedArticle = null) {
   const author = authorById(article.author);
   const related = personalizedArticles({ current: article, limit: 3 });
   const trust = articleTrustDetails(article, author);
+  const localizedTrust = localizedArticleTrust(trust);
 
   setTitle(article.seoTitle || article.title, article.seoDescription || article.subtitle, {
     canonicalUrl: article.canonicalUrl || `${location.origin}/#/article/${article.slug}`,
@@ -2199,7 +2206,7 @@ function renderArticle(slug, hydratedArticle = null) {
       <header class="article-header">
         <a class="pill" style="--category:${category.color}" href="#/category/${category.slug}">${category.name}</a>
         ${article.sponsored ? `<span class="sponsored-label">${article.sponsorName ? `${t("sponsoredBy", "Sponsored by")} ${article.sponsorName}` : t("sponsored", "Sponsored")}</span>` : ""}
-        <span class="trust-label">${escapeHtml(trust.origin)} / ${escapeHtml(trust.statusLabel)}</span>
+        <span class="trust-label">${escapeHtml(localizedTrust.origin)} / ${escapeHtml(localizedTrust.statusLabel)}</span>
         <h1>${article.title}</h1>
         <p>${article.subtitle}</p>
         <div class="article-meta">
