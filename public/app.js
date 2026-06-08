@@ -642,6 +642,7 @@ let notificationNotice = "";
 
 const app = document.querySelector("#app");
 const nav = document.querySelector("[data-nav]");
+const readerActions = document.querySelector("[data-reader-actions]");
 const footerCategories = document.querySelector("[data-footer-categories]");
 let heroTimer = null;
 let liveTimer = null;
@@ -1754,6 +1755,7 @@ function adByPlacement(placement) {
 }
 
 function renderNav() {
+  const unreadNotifications = notifications.filter((item) => !item.readAt).length;
   const primaryLinks = [
     ["#/", t("home", "Home")],
     ["#/search", t("search", "Search")],
@@ -1769,9 +1771,7 @@ function renderNav() {
     ["#/newsletter", t("newsletter", "Newsletter")],
     ["#/membership", t("membership", "Membership")],
     ["#/community", t("community", "Community")],
-    ["#/leaderboard", t("leaderboard", "Leaderboard")],
-    ["#/notifications", `${t("alerts", "Alerts")}${notifications.filter((item) => !item.readAt).length ? ` (${notifications.filter((item) => !item.readAt).length})` : ""}`],
-    ["#/account", readerSession.reader ? t("profile", "Profile") : t("signIn", "Sign in")]
+    ["#/leaderboard", t("leaderboard", "Leaderboard")]
   ];
   const visibleCategories = publicCategories();
   const megaTopics = visibleCategories.map((category) => `
@@ -1807,6 +1807,22 @@ function renderNav() {
     </div>
     ${primaryLinks.slice(2).map(([href, label]) => `<a href="${href}">${label}</a>`).join("")}
   `;
+  if (readerActions) {
+    const bellCount = unreadNotifications ? `<strong>${Number(unreadNotifications).toLocaleString()}</strong>` : "";
+    readerActions.innerHTML = readerSession.reader ? `
+      <a class="reader-bell-link" href="#/notifications" aria-label="${escapeHtml(t("readerAlerts", "Reader alerts"))}">
+        <span aria-hidden="true">&#128276;</span>${bellCount}
+      </a>
+      <a class="reader-action-link reader-profile-link" href="#/account">${escapeHtml(t("profile", "Profile"))}</a>
+      <button class="reader-action-link reader-logout-link" type="button" data-reader-logout>${escapeHtml(t("logOut", "Log out"))}</button>
+    ` : `
+      <a class="reader-bell-link" href="#/notifications" aria-label="${escapeHtml(t("readerAlerts", "Reader alerts"))}">
+        <span aria-hidden="true">&#128276;</span>${bellCount}
+      </a>
+      <a class="reader-action-link reader-signin-link" href="#/account">${escapeHtml(t("signIn", "Sign in"))}</a>
+      <a class="reader-action-link reader-signup-link" href="#/account">${escapeHtml(t("signUp", "Sign up"))}</a>
+    `;
+  }
   syncLanguageSwitchers();
   syncThemeToggles();
   footerCategories.innerHTML = visibleCategories.map((category) => `<a href="#/category/${category.slug}">${category.name}</a>`).join("");
@@ -6652,7 +6668,7 @@ document.addEventListener("click", async (event) => {
       notificationNotice = "";
       loadNotifications().catch(() => {});
       renderNav();
-      renderAccount();
+      renderRoute();
     });
   }
 
