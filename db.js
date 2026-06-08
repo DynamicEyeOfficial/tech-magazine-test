@@ -2182,7 +2182,26 @@ export function initDatabase() {
 
 function localizedCategories(languageCode = "en") {
   const rows = database.prepare("SELECT name, slug, color, icon, description FROM categories ORDER BY sort_order").all();
-  if (languageCode !== "ar") return rows;
+  const lang = String(languageCode || "en").toLowerCase();
+  if (lang === "fr") {
+    const labels = {
+      ai: ["Intelligence artificielle", "Actualites et analyses sur l'IA, les modeles, les agents et les nouveaux produits."],
+      cybersecurity: ["Cybersecurite", "Menaces, confidentialite, securite d'entreprise et defense numerique."],
+      software: ["Logiciels", "Plateformes, applications, SaaS, open source et outils de developpement."],
+      hardware: ["Materiel", "Puces, appareils, infrastructure, ordinateurs et composants."],
+      startups: ["Startups", "Fondateurs, financement, strategie produit et mouvements du marche."],
+      gaming: ["Jeux video", "Jeux, moteurs, esport, materiel et culture interactive."],
+      cloud: ["Cloud", "Plateformes cloud, DevOps, Kubernetes, couts et exploitation a grande echelle."],
+      reviews: ["Tests", "Analyses, verdicts, comparatifs et conseils d'achat."],
+      tutorials: ["Tutoriels", "Guides pratiques, explications et pas-a-pas pour les equipes techniques."],
+      "enterprise-tech": ["Technologie d'entreprise", "Strategie CIO, logiciels d'entreprise, achats et transformation numerique."]
+    };
+    return rows.map((category) => {
+      const localized = labels[category.slug];
+      return localized ? { ...category, name: localized[0], description: localized[1], localized: true, language: "fr", direction: "ltr" } : category;
+    });
+  }
+  if (lang !== "ar") return rows;
   const labels = {
     ai: ["الذكاء الاصطناعي", "أخبار وتحليلات الذكاء الاصطناعي، النماذج، الوكلاء، والمنتجات الجديدة."],
     cybersecurity: ["الأمن السيبراني", "تغطية التهديدات، الخصوصية، أمن المؤسسات، والدفاع الرقمي."],
@@ -7940,8 +7959,56 @@ function arabicArticleTitle(article = {}) {
   return `تقرير جديد عن ${topic}`;
 }
 
+function frenchArticleTopic(article = {}) {
+  const categoryLabels = {
+    ai: "intelligence artificielle",
+    cybersecurity: "cybersecurite",
+    software: "logiciels",
+    hardware: "materiel technologique",
+    startups: "startups",
+    gaming: "jeux video",
+    cloud: "cloud",
+    reviews: "tests produits",
+    tutorials: "tutoriels techniques",
+    "enterprise-tech": "technologie d'entreprise"
+  };
+  return categoryLabels[article.category] || "technologie";
+}
+
+function frenchArticleTitle(article = {}) {
+  const topic = frenchArticleTopic(article);
+  if (article.breaking) return `Urgent : nouvelle evolution en ${topic}`;
+  if (article.trending) return `Tendance actuelle en ${topic}`;
+  if (article.sponsored) return `Contenu partenaire autour de ${topic}`;
+  return `Nouvelle analyse sur ${topic}`;
+}
+
 function localizeArticleFallback(article, languageCode = "en") {
-  if (!article || languageCode !== "ar" || article.language === "ar") return article;
+  const lang = String(languageCode || "en").toLowerCase();
+  if (!article || article.language === lang) return article;
+  if (lang === "fr") {
+    const topic = frenchArticleTopic(article);
+    const source = article.sourceName || "Tech Magazine newsroom";
+    return {
+      ...article,
+      title: frenchArticleTitle(article),
+      subtitle: `Resume francais couvrant les points importants en ${topic}, avec les signaux editoriaux, la source et les donnees de lecture.`,
+      body: [
+        `La redaction suit ce dossier dans le cadre de sa couverture ${topic}. Cette version francaise permet de valider la selection de langue, les contenus localises et l'experience lecteur internationale.`,
+        `Source : ${source}. L'equipe editoriale peut remplacer ce resume par une traduction complete depuis le tableau de bord des langues lorsque le texte final est valide.`,
+        "La plateforme prend en charge le francais dans l'interface publique, les pages d'articles, les metadonnees SEO et les parcours de decouverte."
+      ],
+      caption: `Image editoriale pour la couverture ${topic}.`,
+      seoTitle: `Tech Magazine - ${frenchArticleTitle(article)}`,
+      seoDescription: `Version francaise de la couverture ${topic} sur Tech Magazine.`,
+      language: "fr",
+      languageName: "Francais",
+      direction: "ltr",
+      translated: true,
+      localizedFallback: true
+    };
+  }
+  if (lang !== "ar") return article;
   const topic = arabicArticleTopic(article);
   const source = article.sourceName || "غرفة أخبار Tech Magazine";
   return {

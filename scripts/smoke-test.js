@@ -240,6 +240,8 @@ await expectJson("/api/bootstrap", (json) => json.authors?.some((author) => auth
 await expectJson("/api/bootstrap", (json) => json.credibility?.stats?.publishedArticles >= 1 && Array.isArray(json.credibility?.proofPoints) && json.credibility.proofPoints.some((item) => item.label === "Source governance") && json.credibility.externalProof?.some((item) => item.label === "Awards"));
 await expectJson("/api/bootstrap", (json) => json.audienceConversion?.capabilities?.doubleOptIn === true && json.audienceConversion?.capabilities?.readerAlertPreferences === true && typeof json.audienceConversion?.subscribers === "number");
 await expectJson("/api/languages", (json) => json.ok && json.languages?.some((language) => language.code === "ar" && language.direction === "rtl"));
+await expectJson("/api/bootstrap?lang=fr", (json) => json.language === "fr" && json.direction === "ltr" && json.categories?.some((category) => category.name === "Intelligence artificielle") && json.articles?.some((article) => article.language === "fr" && article.translated === true && /francais/i.test(`${article.subtitle} ${article.body?.join(" ")}`)));
+await expectJson("/api/articles/ai-agents-newsroom-workflows?lang=fr", (json) => json.ok && json.article?.language === "fr" && json.article?.translated === true && /francais/i.test(`${json.article?.subtitle} ${json.article?.body?.join(" ")}`));
 await expectJson("/api/media/optimization", (json) =>
   json.ok
   && json.media?.settings?.storageProvider === "local"

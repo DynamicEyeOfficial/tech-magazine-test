@@ -495,6 +495,108 @@ Object.assign(uiTranslations.ar, {
   languageNoticeTitle: "الموقع يعمل الآن بالعربية",
   languageNoticeBody: "تتغير الواجهة واتجاه القراءة، وتظهر نسخة عربية للمحتوى العام والمقالات عند اختيار العربية."
 });
+uiTranslations.fr = {
+  home: "Accueil",
+  search: "Recherche",
+  sections: "Rubriques",
+  news: "Actualites",
+  articles: "Articles",
+  interviews: "Entretiens",
+  top10: "Top 10",
+  channelNewsDescription: "Actualites technologiques rapides et signaux du marche.",
+  channelArticlesDescription: "Analyses longues, guides pratiques et points de vue editoriaux.",
+  channelInterviewsDescription: "Entretiens avec les leaders, fondateurs et operateurs de la tech.",
+  channelTop10Description: "Classements de plateformes, entreprises, dirigeants et tendances.",
+  channelVideosDescription: "Briefings video, interviews, tests produits et tutoriels.",
+  channelEventsDescription: "Evenements, webinaires, conferences et sessions en direct.",
+  channelReportsDescription: "Rapports, livres blancs et dossiers de recherche pour les entreprises.",
+  feed: "Fil",
+  mobile: "Mobile",
+  video: "Video",
+  podcasts: "Podcasts",
+  reviews: "Tests",
+  live: "Direct",
+  jobs: "Emplois",
+  devices: "Appareils",
+  itRooms: "Salles IT",
+  mediaKit: "Kit media",
+  editorialTeam: "Equipe editoriale",
+  authors: "Auteurs",
+  trustCenter: "Centre de confiance",
+  careers: "Carrieres",
+  advertise: "Annoncer",
+  editorial: "Editorial",
+  reports: "Rapports",
+  liveEvents: "Evenements en direct",
+  brandTagline: "Salle de redaction IT professionnelle",
+  footerTagline: "IA, cybersecurite, cloud, startups, tests",
+  footerText: "Une plateforme media technologique professionnelle couvrant l'IA, la cybersecurite, le cloud, les startups, les tests, les tutoriels et l'IT d'entreprise.",
+  siteBreakingText: "Alertes d'actualite urgente pretes pour la couverture technologique",
+  newsletter: "Newsletter",
+  membership: "Abonnement",
+  community: "Communaute",
+  leaderboard: "Classement",
+  alerts: "Alertes",
+  profile: "Profil",
+  signIn: "Connexion",
+  lightMode: "Clair",
+  darkMode: "Sombre",
+  categories: "Categories",
+  magazine: "Magazine",
+  trending: "Tendance",
+  breakingNews: "Urgent",
+  sponsoredStory: "Article sponsorise",
+  editorPick: "Choix de la redaction",
+  readStory: "Lire l'article",
+  explore: "Explorer",
+  featuredDesk: "Bureau selection",
+  editorsWatching: "Histoires suivies par la redaction",
+  liveSignal: "Signal en direct",
+  trendingNow: "Tendance maintenant",
+  mostPopular: "Les plus lus",
+  personalizedForYou: "Personnalise pour vous",
+  smartRecommendations: "Recommandations intelligentes",
+  basedOnSignals: "Base sur vos signaux de lecture",
+  newsroomSignals: "Recommande par la redaction",
+  tuneProfile: "Ajuster votre profil",
+  signInPersonalize: "Connectez-vous pour personnaliser",
+  latestFeed: "Dernieres nouvelles",
+  freshCoverage: "Couverture tech recente",
+  topics: "Sujets",
+  browseNewsroom: "Parcourir la redaction",
+  languageNoticeTitle: "Le site est maintenant en francais",
+  languageNoticeBody: "L'interface publique, les rubriques et les articles affichent une version francaise lorsque le francais est selectionne.",
+  breadcrumb: "Fil d'Ariane",
+  breakingDesk: "Bureau urgent",
+  livePriorityUpdates: "Mises a jour prioritaires",
+  liveUpdates: "Mises a jour en direct",
+  coverage: "couverture",
+  loadingMoreStories: "Chargement d'autres articles",
+  viewAll: "Tout voir",
+  sponsored: "Sponsorise",
+  sponsoredBy: "Sponsorise par",
+  verified: "Verifie",
+  minuteRead: "min de lecture",
+  views: "vues",
+  articleSaved: "Article enregistre",
+  saveArticle: "Enregistrer l'article",
+  savedArticle: "Article enregistre",
+  readerAlerts: "Alertes lecteur",
+  copy: "Copier",
+  saved: "Enregistre",
+  save: "Enregistrer",
+  more: "Plus",
+  trust: "Confiance",
+  aiSummary: "Resume IA",
+  trustTransparency: "Confiance et transparence des sources",
+  correctionUpdate: "Correction / mise a jour",
+  updated: "Mis a jour",
+  origin: "Origine",
+  factCheck: "Verification",
+  trustScore: "Score de confiance",
+  primarySource: "Source principale",
+  sourceMethod: "methode source"
+};
 let siteSettings = {
   brandName: "Tech Magazine",
   brandTagline: "Professional IT newsroom",
@@ -668,21 +770,31 @@ function articleTrustDetails(article, author) {
 
 function articleTrustPanel(article, author) {
   const trust = articleTrustDetails(article, author);
+  const localizedTrust = currentLanguage === "fr" ? {
+    summary: "Article publie avec auteur identifie, source visible, contexte editorial et route de correction.",
+    disclosure: "Cet article respecte les standards editoriaux de Tech Magazine. Les equipes commerciales ne controlent pas les conclusions editoriales.",
+    correction: trust.correction ? "Mise a jour editoriale disponible pour clarifier le contexte, la methode ou les informations de publication." : "",
+    origin: trust.origin === "original" ? "original" : trust.origin === "imported" ? "importe" : trust.origin,
+    statusLabel: trust.statusLabel === "Editorial Reviewed" ? "Verifie par la redaction" : trust.statusLabel,
+    checkedBy: trust.checkedBy === "Editorial desk" ? "Bureau editorial" : trust.checkedBy,
+    sourceName: trust.sourceName === "Tech Magazine newsroom" ? "Redaction Tech Magazine" : trust.sourceName,
+    authorPolicy: trust.authorPolicy ? "Utilise des sources nommees, documents primaires, briefings produit et contexte technique verifie avant publication." : ""
+  } : trust;
   return `
     <section class="article-trust-panel" id="trust">
       <div class="article-trust-main">
-        <span>Trust and source transparency</span>
-        <h2>${escapeHtml(trust.summary)}</h2>
-        <p>${escapeHtml(trust.disclosure)}</p>
-        ${trust.correction ? `<div class="correction-note"><strong>Correction / update</strong><p>${escapeHtml(trust.correction)}</p>${trust.correctionAt ? `<small>Updated ${escapeHtml(trust.correctionAt)}</small>` : ""}</div>` : ""}
+        <span>${t("trustTransparency", "Trust and source transparency")}</span>
+        <h2>${escapeHtml(localizedTrust.summary)}</h2>
+        <p>${escapeHtml(localizedTrust.disclosure)}</p>
+        ${localizedTrust.correction ? `<div class="correction-note"><strong>${t("correctionUpdate", "Correction / update")}</strong><p>${escapeHtml(localizedTrust.correction)}</p>${trust.correctionAt ? `<small>${t("updated", "Updated")} ${escapeHtml(trust.correctionAt)}</small>` : ""}</div>` : ""}
       </div>
       <div class="article-trust-facts">
-        <article><span>Origin</span><strong>${escapeHtml(trust.origin)}</strong></article>
-        <article><span>Fact check</span><strong>${escapeHtml(trust.statusLabel)}</strong><small>${escapeHtml(trust.checkedBy)} / ${escapeHtml(trust.checkedAt)}</small></article>
-        <article><span>Trust score</span><strong>${Math.max(0, Math.min(100, trust.score)).toLocaleString()}/100</strong></article>
-        <article><span>Primary source</span>${trust.sourceUrl ? `<a href="${escapeHtml(trust.sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(trust.sourceName)}</a>` : `<strong>${escapeHtml(trust.sourceName)}</strong>`}</article>
+        <article><span>${t("origin", "Origin")}</span><strong>${escapeHtml(localizedTrust.origin)}</strong></article>
+        <article><span>${t("factCheck", "Fact check")}</span><strong>${escapeHtml(localizedTrust.statusLabel)}</strong><small>${escapeHtml(localizedTrust.checkedBy)} / ${escapeHtml(trust.checkedAt)}</small></article>
+        <article><span>${t("trustScore", "Trust score")}</span><strong>${Math.max(0, Math.min(100, trust.score)).toLocaleString()}/100</strong></article>
+        <article><span>${t("primarySource", "Primary source")}</span>${trust.sourceUrl ? `<a href="${escapeHtml(trust.sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(localizedTrust.sourceName)}</a>` : `<strong>${escapeHtml(localizedTrust.sourceName)}</strong>`}</article>
       </div>
-      ${trust.authorPolicy ? `<p class="article-source-policy">${escapeHtml(author.name)} source method: ${escapeHtml(trust.authorPolicy)}</p>` : ""}
+      ${localizedTrust.authorPolicy ? `<p class="article-source-policy">${escapeHtml(author.name)} ${t("sourceMethod", "source method")}: ${escapeHtml(localizedTrust.authorPolicy)}</p>` : ""}
     </section>
   `;
 }
@@ -1003,8 +1115,8 @@ function shareUrl(article, platform) {
 function breadcrumbs(items = []) {
   if (!items.length) return "";
   return `
-    <nav class="breadcrumb-nav" aria-label="Breadcrumb">
-      <a href="#/">Home</a>
+    <nav class="breadcrumb-nav" aria-label="${t("breadcrumb", "Breadcrumb")}">
+      <a href="#/">${t("home", "Home")}</a>
       ${items.map((item, index) => `${index < items.length - 1 ? `<a href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>` : `<span aria-current="page">${escapeHtml(item.label)}</span>`}`).join("")}
     </nav>
   `;
@@ -1741,8 +1853,8 @@ function breakingNewsRail() {
   return `
     <section class="content-band breaking-rail">
       <div class="section-heading small">
-        <span>Breaking desk</span>
-        <h2>Live priority updates</h2>
+        <span>${t("breakingDesk", "Breaking desk")}</span>
+        <h2>${t("livePriorityUpdates", "Live priority updates")}</h2>
       </div>
       <div class="headline-stack">
         ${breakingNews.map((alert) => `
@@ -1764,12 +1876,12 @@ function liveUpdatesTicker() {
     href: alert.linkUrl || "#/breaking"
   }));
   const live = liveEvents.slice(0, 4).map((event) => ({
-    label: event.status === "live" ? "live" : "coverage",
+    label: event.status === "live" ? t("live", "live") : t("coverage", "coverage"),
     title: event.title,
     href: `#/live/${event.slug}`
   }));
   const trending = trendingArticles(4).map((article) => ({
-    label: "trending",
+    label: t("trending", "trending"),
     title: article.title,
     href: `#/article/${article.slug}`
   }));
@@ -1780,7 +1892,7 @@ function liveUpdatesTicker() {
   `).join("");
   return `
     <section class="live-ticker" aria-label="Live technology updates">
-      <strong>Live updates</strong>
+      <strong>${t("liveUpdates", "Live updates")}</strong>
       <div><div class="live-ticker-track">${tickerItems}</div></div>
     </section>
   `;
@@ -1827,7 +1939,7 @@ function startLatestFeedObserver() {
   const sentinel = document.querySelector("[data-latest-sentinel]");
   if (!sentinel) return;
   if (!("IntersectionObserver" in window)) {
-    sentinel.innerHTML = `<button class="button ghost" type="button" data-load-more-latest>Load more stories</button>`;
+    sentinel.innerHTML = `<button class="button ghost" type="button" data-load-more-latest>${t("loadingMoreStories", "Load more stories")}</button>`;
     return;
   }
   latestFeedObserver = new IntersectionObserver((entries) => {
@@ -1879,7 +1991,7 @@ function editorialSection(channelSlug, title, leadSlug) {
       <div class="section-heading">
         <span>${channelBySlug(channelSlug)?.name || title}</span>
         <h2>${title}</h2>
-        <a href="#/section/${channelSlug}">View all</a>
+        <a href="#/section/${channelSlug}">${t("viewAll", "View all")}</a>
       </div>
       <div class="feature-list">
         ${articleCard(lead, "lead-card")}
@@ -1997,7 +2109,7 @@ function renderHome() {
         <h2>${t("freshCoverage", "Fresh technology coverage")}</h2>
       </div>
       <div class="article-grid" data-latest-feed>${visibleLatest.map((article) => articleCard(article)).join("")}</div>
-      ${visibleLatest.length < latest.length ? `<div class="feed-loader" data-latest-sentinel><span>Loading more stories</span></div>` : ""}
+      ${visibleLatest.length < latest.length ? `<div class="feed-loader" data-latest-sentinel><span>${t("loadingMoreStories", "Loading more stories")}</span></div>` : ""}
     </section>` : ""}
 
     ${sections.categoryShowcase ? `<section class="content-band">
@@ -2018,9 +2130,9 @@ function renderHome() {
 
     ${liveEvents.length ? `<section class="content-band">
       <div class="section-heading">
-        <span>Live desk</span>
-        <h2>Live coverage</h2>
-        <a href="#/live">View all</a>
+        <span>${t("live", "Live")} desk</span>
+        <h2>${t("liveEvents", "Live coverage")}</h2>
+        <a href="#/live">${t("viewAll", "View all")}</a>
       </div>
       <div class="mini-grid">
         ${liveEvents.slice(0, 3).map((event) => `
@@ -2086,24 +2198,24 @@ function renderArticle(slug, hydratedArticle = null) {
       ])}
       <header class="article-header">
         <a class="pill" style="--category:${category.color}" href="#/category/${category.slug}">${category.name}</a>
-        ${article.sponsored ? `<span class="sponsored-label">Sponsored${article.sponsorName ? ` by ${article.sponsorName}` : ""}</span>` : ""}
+        ${article.sponsored ? `<span class="sponsored-label">${article.sponsorName ? `${t("sponsoredBy", "Sponsored by")} ${article.sponsorName}` : t("sponsored", "Sponsored")}</span>` : ""}
         <span class="trust-label">${escapeHtml(trust.origin)} / ${escapeHtml(trust.statusLabel)}</span>
         <h1>${article.title}</h1>
         <p>${article.subtitle}</p>
         <div class="article-meta">
           <img src="${author.avatar}" alt="${author.name}">
           <a href="#/author/${author.id}">${author.name}</a>
-          ${author.verified ? `<span>Verified</span>` : ""}
+          ${author.verified ? `<span>${t("verified", "Verified")}</span>` : ""}
           <span>${article.date}</span>
-          <span>${article.minutes} min read</span>
-          <span>${article.views.toLocaleString()} views</span>
+          <span>${article.minutes} ${t("minuteRead", "min read")}</span>
+          <span>${article.views.toLocaleString()} ${t("views", "views")}</span>
         </div>
         <div class="article-action-strip">
-          <button class="button primary bookmark-button" type="button" data-bookmark="${article.slug}" aria-label="${readerSession.bookmarks.includes(article.slug) ? "Article saved" : "Save article"}">
+          <button class="button primary bookmark-button" type="button" data-bookmark="${article.slug}" aria-label="${readerSession.bookmarks.includes(article.slug) ? t("articleSaved", "Article saved") : t("saveArticle", "Save article")}">
             <span aria-hidden="true">${readerSession.bookmarks.includes(article.slug) ? "✓" : "+"}</span>
-            ${readerSession.bookmarks.includes(article.slug) ? "Saved article" : "Save article"}
+            ${readerSession.bookmarks.includes(article.slug) ? t("savedArticle", "Saved article") : t("saveArticle", "Save article")}
           </button>
-          <a class="button secondary" href="#/notifications">Reader alerts</a>
+          <a class="button secondary" href="#/notifications">${t("readerAlerts", "Reader alerts")}</a>
         </div>
       </header>
       <figure class="article-hero-image">
@@ -2112,22 +2224,22 @@ function renderArticle(slug, hydratedArticle = null) {
       </figure>
       <div class="article-layout">
         <aside class="share-rail">
-          <button type="button" data-share="${article.title}">Copy</button>
+          <button type="button" data-share="${article.title}">${t("copy", "Copy")}</button>
           <a href="${shareUrl(article, "facebook")}" target="_blank" rel="noreferrer" aria-label="Share on Facebook">Facebook</a>
           <a href="${shareUrl(article, "x")}" target="_blank" rel="noreferrer" aria-label="Share on X">X</a>
           <a href="${shareUrl(article, "linkedin")}" target="_blank" rel="noreferrer" aria-label="Share on LinkedIn">LinkedIn</a>
           <a href="${shareUrl(article, "whatsapp")}" target="_blank" rel="noreferrer" aria-label="Share on WhatsApp">WhatsApp</a>
           <a href="${shareUrl(article, "reddit")}" target="_blank" rel="noreferrer" aria-label="Share on Reddit">Reddit</a>
           <a href="${shareUrl(article, "telegram")}" target="_blank" rel="noreferrer" aria-label="Share on Telegram">Telegram</a>
-          <button type="button" data-bookmark="${article.slug}">${readerSession.bookmarks.includes(article.slug) ? "Saved" : "Save"}</button>
+          <button type="button" data-bookmark="${article.slug}">${readerSession.bookmarks.includes(article.slug) ? t("saved", "Saved") : t("save", "Save")}</button>
           <a href="#/newsletter">Newsletter</a>
-          <a href="#/search?category=${category.slug}">More</a>
-          <a href="#trust">Trust</a>
+          <a href="#/search?category=${category.slug}">${t("more", "More")}</a>
+          <a href="#trust">${t("trust", "Trust")}</a>
         </aside>
         <div class="article-content">
           ${articleTrustPanel(article, author)}
           <section class="ai-reader-panel">
-            <button class="button ghost" type="button" data-ai-summary="${article.slug}">AI summary</button>
+            <button class="button ghost" type="button" data-ai-summary="${article.slug}">${t("aiSummary", "AI summary")}</button>
             <div class="form-message" data-ai-summary-output></div>
           </section>
           ${article.body.map(renderBodyBlock).join("")}
