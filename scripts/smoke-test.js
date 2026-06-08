@@ -868,6 +868,9 @@ if (cookie) {
     ok: analyticsPageResponse.ok
       && analyticsPageBody.includes("Analytics charts")
       && analyticsPageBody.includes("Search analytics dashboard")
+      && analyticsPageBody.includes("id=\"search-analytics-dashboard\"")
+      && analyticsPageBody.includes("data-admin-search-analytics")
+      && analyticsPageBody.includes("Admin Search Analytics")
       && analyticsPageBody.includes("analytics-chart-card")
       && analyticsPageBody.includes("analytics-columns")
       && analyticsPageBody.includes("analytics-bars")

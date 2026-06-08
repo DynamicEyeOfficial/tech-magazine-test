@@ -836,7 +836,7 @@ function adminLayout(title, user, body, active = "dashboard") {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(title)} | Tech Magazine CMS</title>
   <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css?v=26">
+  <link rel="stylesheet" href="/styles.css?v=27">
   <script src="/admin.js?v=6" defer></script>
 </head>
 <body class="admin-body admin-role-${escapeHtml(roleSlug)}">
@@ -875,7 +875,7 @@ function adminLoginPage(error = "") {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CMS Login | Tech Magazine</title>
   <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css?v=26">
+  <link rel="stylesheet" href="/styles.css?v=27">
 </head>
 <body>
   <section class="login-shell">
@@ -897,11 +897,11 @@ function adminLoginPage(error = "") {
 }
 
 function forgotPasswordPage(message = "") {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Password Recovery | Tech Magazine</title><link rel="stylesheet" href="/styles.css?v=26"></head><body><section class="login-shell"><form class="login-card" method="post" action="/admin/forgot"><h1>Password recovery</h1>${message ? `<div class="alert success">${escapeHtml(message)}</div>` : ""}<label>Email<input type="email" name="email" autocomplete="username" required></label><button class="button primary" type="submit">Create reset link</button><a href="/admin/login">Back to login</a></form></section></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Password Recovery | Tech Magazine</title><link rel="stylesheet" href="/styles.css?v=27"></head><body><section class="login-shell"><form class="login-card" method="post" action="/admin/forgot"><h1>Password recovery</h1>${message ? `<div class="alert success">${escapeHtml(message)}</div>` : ""}<label>Email<input type="email" name="email" autocomplete="username" required></label><button class="button primary" type="submit">Create reset link</button><a href="/admin/login">Back to login</a></form></section></body></html>`;
 }
 
 function resetPasswordPage(token, message = "") {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Reset Password | Tech Magazine</title><link rel="stylesheet" href="/styles.css?v=26"></head><body><section class="login-shell"><form class="login-card" method="post" action="/admin/reset"><h1>Reset password</h1>${message ? `<div class="alert">${escapeHtml(message)}</div>` : ""}<input type="hidden" name="token" value="${escapeHtml(token)}"><label>New password<input type="password" name="password" minlength="8" required></label><button class="button primary" type="submit">Update password</button><a href="/admin/login">Back to login</a></form></section></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Reset Password | Tech Magazine</title><link rel="stylesheet" href="/styles.css?v=27"></head><body><section class="login-shell"><form class="login-card" method="post" action="/admin/reset"><h1>Reset password</h1>${message ? `<div class="alert">${escapeHtml(message)}</div>` : ""}<input type="hidden" name="token" value="${escapeHtml(token)}"><label>New password<input type="password" name="password" minlength="8" required></label><button class="button primary" type="submit">Update password</button><a href="/admin/login">Back to login</a></form></section></body></html>`;
 }
 
 function dashboardPage(user) {
@@ -4772,7 +4772,21 @@ function simpleAdminPage(user, page) {
     ].map(([label, detail, status]) => `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(detail)}</td><td><span class="status">${escapeHtml(status)}</span></td></tr>`).join("");
     const money = (cents = 0) => `$${(Number(cents || 0) / 100).toFixed(2)}`;
     return adminLayout("Analytics", user, `
-      <section class="admin-heading"><span>Enterprise analytics</span><h1>Newsroom intelligence</h1></section>
+      <section class="admin-heading"><span>Enterprise analytics</span><h1>Newsroom intelligence</h1><div class="inline-actions"><a class="button primary" href="#search-analytics-dashboard">Search analytics</a><a class="button secondary" href="#analytics-charts">Analytics charts</a><a class="button secondary" href="#analytics-integrations">Integrations</a></div></section>
+      <section class="admin-panel analytics-command-center search-analytics-command" id="search-analytics-dashboard" data-admin-search-analytics>
+        <div>
+          <span>Search analytics</span>
+          <h2>Search analytics dashboard</h2>
+          <strong class="analytics-visible-label">Admin Search Analytics</strong>
+          <p class="muted">Admin-visible search analytics for query demand, zero-result risk, content-type demand, and daily search volume. This is the product-owner QA section for search performance.</p>
+        </div>
+        <div class="analytics-command-metrics">
+          <article><span>Total searches</span><strong>${Number(analytics.searchAnalytics.searches || 0).toLocaleString()}</strong></article>
+          <article><span>Zero-result searches</span><strong>${Number(analytics.searchAnalytics.zeroResultSearches || 0).toLocaleString()}</strong></article>
+          <article><span>Top query</span><strong>${escapeHtml(topSearch?.query || "No searches yet")}</strong></article>
+          <article><span>Max results found</span><strong>${Number(topSearch?.maxResults || 0).toLocaleString()}</strong></article>
+        </div>
+      </section>
       <section class="admin-stats">
         <article><span>Total article views</span><strong>${Number(stats.views).toLocaleString()}</strong></article>
         <article><span>Tracked page views</span><strong>${Number(analytics.pageViews).toLocaleString()}</strong></article>
@@ -4782,7 +4796,7 @@ function simpleAdminPage(user, page) {
         <article><span>Avg scroll depth</span><strong>${Number(analytics.avgScrollDepth).toLocaleString()}%</strong></article>
         <article><span>MRR estimate</span><strong>${money(analytics.revenue.monthlyRecurring)}</strong></article>
       </section>
-      <section class="admin-panel analytics-overview-panel">
+      <section class="admin-panel analytics-overview-panel" id="analytics-charts">
         <div>
           <span>Analytics charts</span>
           <h2>Live traffic, engagement, and search charts</h2>
@@ -4792,19 +4806,6 @@ function simpleAdminPage(user, page) {
           <article><span>Chart cards</span><strong>8+</strong></article>
           <article><span>Search blocks</span><strong>${Number((analytics.searchAnalytics.topQueries || []).length + (analytics.searchAnalytics.daily || []).length).toLocaleString()}</strong></article>
           <article><span>Realtime events</span><strong>${Number(analytics.realtime.events15m || 0).toLocaleString()}</strong></article>
-        </div>
-      </section>
-      <section class="admin-panel analytics-command-center">
-        <div>
-          <span>Search analytics</span>
-          <h2>Search analytics dashboard</h2>
-          <p class="muted">Queries, zero-result risk, content-type demand, and daily search volume are shown here before the long report tables.</p>
-        </div>
-        <div class="analytics-command-metrics">
-          <article><span>Total searches</span><strong>${Number(analytics.searchAnalytics.searches || 0).toLocaleString()}</strong></article>
-          <article><span>Zero-result searches</span><strong>${Number(analytics.searchAnalytics.zeroResultSearches || 0).toLocaleString()}</strong></article>
-          <article><span>Top query</span><strong>${escapeHtml(topSearch?.query || "No searches yet")}</strong></article>
-          <article><span>Max results found</span><strong>${Number(topSearch?.maxResults || 0).toLocaleString()}</strong></article>
         </div>
       </section>
       <section class="admin-grid two analytics-chart-grid analytics-priority-charts">
@@ -4843,7 +4844,7 @@ function simpleAdminPage(user, page) {
         <section class="admin-panel"><h2>Subscriber analytics</h2><table><thead><tr><th>Date</th><th>Subscribers</th></tr></thead><tbody>${subscriberRows || "<tr><td colspan='2'>No subscriber growth yet.</td></tr>"}</tbody></table></section>
       </section>
       <section class="admin-panel"><h2>BI alerts</h2><table><thead><tr><th>Severity</th><th>Recommendation</th></tr></thead><tbody>${alertRows || "<tr><td colspan='2'>No BI alerts right now.</td></tr>"}</tbody></table></section>
-      <section class="admin-panel"><h2>External integrations</h2><table><thead><tr><th>Provider</th><th>Configuration</th><th>Status</th></tr></thead><tbody>${integrationRows}</tbody></table></section>
+      <section class="admin-panel" id="analytics-integrations"><h2>External integrations</h2><table><thead><tr><th>Provider</th><th>Configuration</th><th>Status</th></tr></thead><tbody>${integrationRows}</tbody></table></section>
       <section class="admin-panel"><h2>Content engagement</h2><table><thead><tr><th>Article</th><th>Reads</th><th>Avg time</th><th>Avg scroll</th></tr></thead><tbody>${engagementRows || "<tr><td colspan='4'>No engagement events yet.</td></tr>"}</tbody></table></section>
       <section class="admin-panel"><h2>Journalist analytics</h2><table><thead><tr><th>Author</th><th>Articles</th><th>Views</th><th>Avg time</th></tr></thead><tbody>${authorRows || "<tr><td colspan='4'>No author data yet.</td></tr>"}</tbody></table></section>
       <section class="admin-grid two">

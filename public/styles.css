@@ -4194,6 +4194,29 @@ th {
     linear-gradient(135deg, rgba(12, 33, 40, 0.96), rgba(6, 20, 25, 0.94));
 }
 
+.search-analytics-command {
+  position: relative;
+  overflow: hidden;
+  border-width: 2px;
+  border-color: color-mix(in srgb, var(--accent) 62%, var(--line));
+  box-shadow: 0 22px 70px rgba(92, 228, 207, 0.14);
+}
+
+.search-analytics-command::before {
+  content: "Admin Search Analytics";
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 44%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  background: rgba(3, 17, 21, 0.78);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .analytics-command-center > div > span {
   color: var(--accent);
   font-size: 0.78rem;
@@ -4205,6 +4228,19 @@ th {
   margin-top: 6px;
   max-width: 520px;
   font-size: clamp(1.45rem, 2.4vw, 2.1rem);
+}
+
+.analytics-visible-label {
+  display: inline-flex;
+  margin: 2px 0 12px;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 999px;
+  color: var(--accent);
+  background: rgba(92, 228, 207, 0.08);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .analytics-command-metrics {
