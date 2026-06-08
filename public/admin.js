@@ -387,6 +387,7 @@ function workflowEventLabel(type) {
 function prependWorkflowEvent(event) {
   if (!workflowMessages || !event?.type) return;
   if (event.type === "workflow.connected") return;
+  if (event.type === "workflow.message" && event.payload?.articleId) return;
   workflowMessages.querySelectorAll(".muted").forEach((item) => item.remove());
   const item = document.createElement("article");
   item.className = "topic-row realtime-event";

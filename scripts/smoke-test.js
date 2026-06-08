@@ -672,11 +672,19 @@ if (cookie) {
       })
     });
     const newsroomMessageBody = await newsroomMessageResponse.text();
+    const internalFeedHtml = newsroomMessageBody.match(/<div class="workflow-message-list" data-workflow-messages>([\s\S]*?)<\/div>/)?.[1] || "";
     checks.push({
       name: "admin workflow internal newsroom message create",
       ok: newsroomMessageResponse.ok
         && newsroomMessageBody.includes("Post newsroom message")
         && newsroomMessageBody.includes(`Section four internal newsroom message ${workflowStamp}`),
+      status: newsroomMessageResponse.status
+    });
+    checks.push({
+      name: "admin workflow internal message appears in feed",
+      ok: newsroomMessageResponse.ok
+        && internalFeedHtml.includes(`Section four internal newsroom message ${workflowStamp}`)
+        && !internalFeedHtml.includes("No internal newsroom messages yet."),
       status: newsroomMessageResponse.status
     });
     const workflowOverviewResponse = await request("/api/workflow/overview?status=all", { headers: { cookie } });

@@ -3175,12 +3175,14 @@ export function addNewsroomMessage(payload, userId) {
   const message = String(payload.message || "").trim();
   if (!message) return { ok: false, message: "Message is required." };
   const id = randomUUID();
+  const messageType = payload.messageType === "internal" ? "internal" : "editorial_note";
+  const articleId = messageType === "internal" ? null : payload.articleId || null;
   const channel = ["editorial", "breaking", "legal", "production"].includes(payload.channel) ? payload.channel : "editorial";
   database
     .prepare("INSERT INTO newsroom_messages (id, article_id, channel, message, user_id) VALUES (?, ?, ?, ?, ?)")
-    .run(id, payload.articleId || null, channel, message, userId);
-  addAuditLog({ userId, action: "newsroom_message:create", targetType: "newsroom", targetId: payload.articleId || id, details: message.slice(0, 120) });
-  return { ok: true, id, message: "Newsroom message posted." };
+    .run(id, articleId, channel, message, userId);
+  addAuditLog({ userId, action: "newsroom_message:create", targetType: "newsroom", targetId: articleId || id, details: message.slice(0, 120) });
+  return { ok: true, id, articleId: articleId || "", channel, messageType, message: "Newsroom message posted." };
 }
 
 export function getEditorialTasks(limit = 100) {

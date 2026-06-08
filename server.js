@@ -837,7 +837,7 @@ function adminLayout(title, user, body, active = "dashboard") {
   <title>${escapeHtml(title)} | Tech Magazine CMS</title>
   <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css?v=26">
-  <script src="/admin.js?v=5" defer></script>
+  <script src="/admin.js?v=6" defer></script>
 </head>
 <body class="admin-body admin-role-${escapeHtml(roleSlug)}">
   <aside class="admin-sidebar">
@@ -1234,8 +1234,8 @@ function workflowPage(user, urlOrStatus = "pending_review", statusOrMessage = ""
   const calendarRows = operations.calendar.slice(0, 8).map((item) => `
     <tr><td><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.notes || item.articleTitle || "")}</small></td><td>${escapeHtml(item.eventType)}</td><td>${escapeHtml(item.startsAt)}</td><td>${escapeHtml(item.owner || "")}</td><td><span class="status">${escapeHtml(item.status)}</span></td></tr>
   `).join("");
-  const editorialMessages = operations.messages.filter((item) => item.channel === "editorial" || item.articleTitle);
-  const internalMessages = operations.messages.filter((item) => !item.articleTitle && item.channel !== "editorial");
+  const editorialMessages = operations.messages.filter((item) => item.articleId || item.articleTitle);
+  const internalMessages = operations.messages.filter((item) => !item.articleId && !item.articleTitle);
   const editorialMessageRows = editorialMessages.slice(0, 8).map((item) => `
     <article class="topic-row"><span>${escapeHtml(item.channel)} / ${escapeHtml(item.userName || "System")}</span><p>${escapeHtml(item.message)}</p><small>${escapeHtml(item.articleTitle || "General newsroom")} / ${escapeHtml(item.createdAt)}</small></article>
   `).join("");
@@ -1278,6 +1278,7 @@ function workflowPage(user, urlOrStatus = "pending_review", statusOrMessage = ""
       <p>Post internal newsroom messages for editors, reporters, producers, legal, and breaking desk teams. These messages are staff-only and can be sent without attaching them to an article.</p>
       <form class="admin-form flat" method="post" action="/admin/workflow/messages">
         ${csrfInput(user)}
+        <input type="hidden" name="messageType" value="internal">
         <div class="form-grid">
           <label>Channel<select name="channel"><option value="production">Production desk</option><option value="breaking">Breaking desk</option><option value="legal">Legal review</option><option value="editorial">Editorial desk</option></select></label>
           <label>Message<textarea name="message" required placeholder="Post a staff-only newsroom update, handoff, alert, or team message."></textarea></label>
@@ -1298,6 +1299,7 @@ function workflowPage(user, urlOrStatus = "pending_review", statusOrMessage = ""
       <p>Attach private editorial, legal, or handoff notes to a specific article. These notes stay inside the workflow area and are not shown to public readers.</p>
       <form class="admin-form flat" method="post" action="/admin/workflow/messages">
         ${csrfInput(user)}
+        <input type="hidden" name="messageType" value="editorial_note">
         <div class="form-grid">
           <label>Channel<select name="channel"><option value="editorial">Editorial note</option><option value="legal">Legal review</option><option value="breaking">Breaking desk</option><option value="production">Production</option></select></label>
           <label>Article<select name="articleId">${articleOptions}</select></label>
@@ -5147,7 +5149,14 @@ const httpServer = createServer(async (request, response) => {
     if (request.method === "POST" && url.pathname === "/admin/workflow/messages") {
       if (!can(user, "articles")) return forbiddenPage(response, user);
       const result = addNewsroomMessage(adminForm, user.id);
-      if (result.ok) broadcastWorkflowEvent("workflow.message", { id: result.id, channel: adminForm.channel || "editorial", message: adminForm.message, userName: user.name });
+      if (result.ok) broadcastWorkflowEvent("workflow.message", {
+        id: result.id,
+        channel: result.channel || adminForm.channel || "editorial",
+        articleId: result.articleId || "",
+        messageType: result.messageType || adminForm.messageType || "",
+        message: adminForm.message,
+        userName: user.name
+      });
       sendHtml(response, workflowPage(user, "all", result.message));
       return;
     }
