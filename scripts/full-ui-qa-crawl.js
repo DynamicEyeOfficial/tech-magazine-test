@@ -341,6 +341,22 @@ function normalizeInternalLink(href) {
   return "";
 }
 
+async function setViewport(cdp, metrics, label) {
+  try {
+    await cdp.send("Emulation.setDeviceMetricsOverride", metrics);
+    return true;
+  } catch (error) {
+    await cdp.send("Emulation.clearDeviceMetricsOverride").catch(() => {});
+    try {
+      await cdp.send("Emulation.setDeviceMetricsOverride", metrics);
+      return true;
+    } catch (retryError) {
+      record(`${label} viewport can be applied`, false, retryError.message || error.message || "CDP viewport error");
+      return false;
+    }
+  }
+}
+
 await mkdir(outDir, { recursive: true });
 const userDataDir = await mkdtemp(join(tmpdir(), "tm-full-qa-"));
 const port = 9600 + Math.floor(Math.random() * 500);
@@ -363,7 +379,7 @@ try {
   record("reader login token available", Boolean(token));
   record("admin session cookie available", Boolean(cookie));
 
-  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 950, deviceScaleFactor: 1, mobile: false });
+  await setViewport(cdp, { width: 1440, height: 950, deviceScaleFactor: 1, mobile: false }, "desktop");
   await setClientState(cdp, token, "light");
   const allLinks = new Set();
   for (const [name, route] of publicRoutes) {
@@ -371,11 +387,11 @@ try {
     data.links.map(normalizeInternalLink).filter(Boolean).forEach((link) => allLinks.add(link));
   }
 
-  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await setViewport(cdp, { width: 390, height: 844, deviceScaleFactor: 2, mobile: true }, "mobile");
   await inspect(cdp, "client mobile home", `${baseUrl}/#/`);
   await inspect(cdp, "client mobile profile", `${baseUrl}/#/account`);
 
-  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 950, deviceScaleFactor: 1, mobile: false });
+  await setViewport(cdp, { width: 1440, height: 950, deviceScaleFactor: 1, mobile: false }, "admin desktop");
   await setAdminCookie(cdp, cookie);
   for (const route of adminRoutes) {
     const data = await inspect(cdp, `admin ${route}`, `${baseUrl}${route}`, { admin: true });
