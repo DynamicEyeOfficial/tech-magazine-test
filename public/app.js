@@ -3889,6 +3889,8 @@ async function renderCommunityTopic(slug) {
 async function renderNotifications() {
   const mobile = await loadMobileExperience();
   const prefs = notificationPreferences || {};
+  const readerName = readerSession.reader?.name || "Reader";
+  const readerEmail = readerSession.reader?.email || "";
   const favoriteCategoryValue = (prefs.favoriteCategories || []).join(", ");
   const followedAuthorValue = (prefs.followedAuthors || []).join(", ");
   setTitle("Notifications", "Manage breaking news, live event, and personalized technology alerts.");
@@ -3902,6 +3904,21 @@ async function renderNotifications() {
         <article><strong>${Number(audienceConversion.notificationPreferences || 0).toLocaleString()}</strong><span>reader preferences</span></article>
         <article><strong>${Number(audienceConversion.pushEnabledReaders || 0).toLocaleString()}</strong><span>push-enabled readers</span></article>
       </div>
+    </section>
+    <section class="content-band notification-access-panel">
+      <article class="reader-card notification-access-card ${readerSession.token ? "is-reader-accessible" : "is-locked"}">
+        <div class="card-heading-row">
+          <div>
+            <span>Reader access</span>
+            <h2>${readerSession.token ? `Signed in as ${escapeHtml(readerName)}` : "Reader sign-in required for saved preferences"}</h2>
+          </div>
+          <span class="status-pill">${readerSession.token ? "Reader notifications active" : "Public alerts only"}</span>
+        </div>
+        <p>${readerSession.token ? `This notification area is available to your reader account${readerEmail ? ` (${escapeHtml(readerEmail)})` : ""}. You can mark alerts read, save categories and authors, and connect push delivery from here.` : "Visitors can read public alerts, but saving alert preferences, marking notifications, and push setup require a reader account."}</p>
+        <div class="inline-actions">
+          ${readerSession.token ? `<a class="button secondary" href="#/account">Open reader profile</a><button class="button ghost" type="button" data-scroll-to-alert-prefs>Manage preferences</button>` : `<a class="button primary" href="#/account">Sign in or create reader account</a>`}
+        </div>
+      </article>
     </section>
     <section class="content-band account-grid">
       <section class="reader-card alert-feed-card">
@@ -3930,7 +3947,7 @@ async function renderNotifications() {
             <span>Preference center</span>
             <h2>What should trigger alerts?</h2>
           </div>
-          ${readerSession.token ? `<span class="status-pill">${prefs.pushEnabled ? "Push connected" : "Signed in"}</span>` : `<span class="status-pill">Sign in required</span>`}
+          ${readerSession.token ? `<span class="status-pill">${prefs.pushEnabled ? "Push connected" : "Signed in reader"}</span>` : `<span class="status-pill">Sign in required</span>`}
         </div>
         ${readerSession.token ? `
           <div class="alert-toggle-grid">
@@ -6617,6 +6634,11 @@ document.addEventListener("click", async (event) => {
       await loadNotifications();
       renderNotifications();
     });
+  }
+
+  const scrollToAlertPrefs = event.target.closest("[data-scroll-to-alert-prefs]");
+  if (scrollToAlertPrefs) {
+    document.querySelector("[data-notification-preferences]")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   const logout = event.target.closest("[data-reader-logout]");
