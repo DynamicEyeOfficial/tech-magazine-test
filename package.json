@@ -26,6 +26,7 @@
     "qa:full-ui": "node scripts/full-ui-qa-crawl.js",
     "qa:use-cases": "node scripts/admin-use-case-qa.js",
     "qa:news-editor": "node scripts/news-editor-qa.js",
+    "guide:screenshots": "node scripts/capture-master-guide-screenshots.js",
     "news:preview": "node scripts/import-tech-news.js --preview",
     "news:import": "node scripts/import-tech-news.js --limit=50 --status=source_policy",
     "qa:news-ingestion": "node scripts/news-ingestion-qa.js"
